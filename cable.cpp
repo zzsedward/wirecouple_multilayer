@@ -154,7 +154,7 @@ int main(int argc, char* argv[]){
          //cout<<"\nsmallest sv: "<<sv[no_solutions-1]<<endl;*/
          // plot_field2(wires,ko,epsilon_rd,epsilon_r,complex(0.99*ko,0.0),max_harmonic,amps);
          complex ex,ey,ez,hx,hy,hz,ephi;
-         get_fields(wires,ko,(0.9*ko,0.),max_harmonic,amps,5e-3,11.1e-3,ex,ey,ez,hx,hy,hz,ephi);
+         get_fields(wires,ko,(0.9*ko,0.),max_harmonic,amps,0.,0.,ex,ey,ez,hx,hy,hz,ephi);
 }
 
 
@@ -703,9 +703,42 @@ void get_fields(vector<wire>& wires,
     const int no_wires(wires.size());
     const int no_harmonics(2*max_harmonic+1);
 
+//--------------------bessel function declaration----------------------------
+    int nz,ifail,scale_len=1;
+
+         static complex jj(0.,1.);
+
+         char scale='u';
+
+         double r,zc[2],fnu=0.;
+
+     int no_bes_needed(std::max(2,max_harmonic+1)),hank_kind(2),hank_its;
+
+     static vector<complex> hanka,hankad,hankb,hankbd,besj,besjd,besy,besyd;
+
+     static vector<double> temp;
+     static vector<double> cwrk;
+
+         hanka.reserve(no_bes_needed);  //Hank(kt*r)
+         hankad.reserve(no_bes_needed);
+
+         hankb.reserve(no_bes_needed);  //Hank(kt*r)
+         hankbd.reserve(no_bes_needed);
+
+         besj.reserve(no_bes_needed);  //Besselktd*r)   term in dielectric
+         besjd.reserve(no_bes_needed);
+
+         besy.reserve(no_bes_needed);  //Besselktd*r)   term in dielectric
+         besyd.reserve(no_bes_needed);
+
+
+     temp.reserve(2*no_bes_needed);
+     cwrk.reserve(2*no_bes_needed);
+//----------------------------------------------------------------------------------------------
+
     int wire_number(21),layer_number(21);
 
-    complex epsilon_relative(0.,0.);
+    complex epsilon_relative(1.,0.);
 
     for(int iw=0;iw<no_wires;++iw){
 
@@ -714,7 +747,7 @@ void get_fields(vector<wire>& wires,
 
         const double dist(sqrt(dx*dx+dy*dy));
 
-        const double number_layer(wires[iw].no_layers);
+        const int number_layer(wires[iw].no_layers);
 
         for(int il=number_layer-1;il>=0;--il){
                 cout<<"\nlayer index: "<<il;
@@ -728,10 +761,53 @@ void get_fields(vector<wire>& wires,
         }
     }
 
-    if(wire_number>20) epsilon_relative=(1.,0.);
-
     cout<<"\n\nwire number: " <<wire_number<<"\nlayer number: "<<layer_number<<endl;
     cout<<"\nrelative epsilon: "<<epsilon_relative<<endl;
+
+    if(wire_number>20) {
+
+        cout<<"\nThe point is in the air."<<endl;
+
+        complex kt2= ko*ko-beta*beta;
+        complex kt=sqrt(kt2);
+
+        for(int iw=0;iw<no_wires;++iw){
+
+            const double ddx(x-wires[iw].centre[0]);
+            const double ddy(y-wires[iw].centre[1]);
+
+            const double r(sqrt(ddx*ddx+ddy*ddy));
+            const double phi(atan2(ddx,ddy));
+
+            const int number_layer(wires[iw].no_layers);
+            cout<<"\nwire "<<iw<<" number of layers: "<<number_layer;
+
+            zc[0]=real(kt*wires[iw].radius[number_layer-1]);
+            zc[1]=imag(kt*wires[iw].radius[number_layer-1]);
+
+                S17DLF(&hank_kind,&fnu,zc,&no_bes_needed,&scale,scale_len,&temp[0],&hank_its,&ifail);
+
+                for(int k=0;k<no_bes_needed;k++) hankb[k]=complex(temp[2*k],temp[2*k+1]);
+
+            zc[0]=real(kt*r);
+            zc[1]=imag(kt*r);
+                    //cout<<"kt*r air: "<<zc[0]+jj*zc[1]<<endl;
+                S17DLF(&hank_kind,&fnu,zc,&no_bes_needed,&scale,scale_len,&temp[0],&hank_its,&ifail);
+
+                for(int k=0;k<no_bes_needed;k++) hanka[k]=complex(temp[2*k],temp[2*k+1]);
+
+                hankad[0]=-kt*hanka[1];
+
+                for(int k=1;k<no_bes_needed;k++) hankad[k]=kt*(hanka[k-1]-double(k)/complex(zc[0],zc[1])*hanka[k]);
+
+            for(int ih=-max_harmonic;ih<=max_harmonic;++ih){
+
+            }
+
+        }
+    }
+
+
 
     ex=ey=ez=hx=hy=hz=ephi=0.;
 
