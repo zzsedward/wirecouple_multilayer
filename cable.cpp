@@ -154,7 +154,7 @@ int main(int argc, char* argv[]){
          //cout<<"\nsmallest sv: "<<sv[no_solutions-1]<<endl;*/
          // plot_field2(wires,ko,epsilon_rd,epsilon_r,complex(0.99*ko,0.0),max_harmonic,amps);
          complex ex,ey,ez,hx,hy,hz,ephi;
-         get_fields(wires,ko,(0.9*ko,0.),max_harmonic,amps,0.,0.,ex,ey,ez,hx,hy,hz,ephi);
+         get_fields(wires,ko,(0.9*ko,0.),max_harmonic,amps,-10.8e-3,0.,ex,ey,ez,hx,hy,hz,ephi);
 }
 
 
@@ -699,9 +699,16 @@ void get_fields(vector<wire>& wires,
                 complex& hy,
                 complex& hz,
                 complex& ephi){
-
+    ex=ey=ez=hx=hy=hz=ephi=0.;
+    complex er,hphi,hr;
     const int no_wires(wires.size());
     const int no_harmonics(2*max_harmonic+1);
+
+    const double w_ua(ko*constants::get_zo());
+    const double w_ea(ko*constants::get_yo());
+
+    complex kt2= ko*ko-beta*beta;
+    complex kt=sqrt(kt2);
 
 //--------------------bessel function declaration----------------------------
     int nz,ifail,scale_len=1;
@@ -714,7 +721,7 @@ void get_fields(vector<wire>& wires,
 
      int no_bes_needed(std::max(2,max_harmonic+1)),hank_kind(2),hank_its;
 
-     static vector<complex> hanka,hankad,hankb,hankbd,besj,besjd,besy,besyd;
+     static vector<complex> hanka,hankad,hankb,hankbd,besj,besjd,besy,besyd,besa,besad,besb,besbd;
 
      static vector<double> temp;
      static vector<double> cwrk;
@@ -731,6 +738,11 @@ void get_fields(vector<wire>& wires,
          besy.reserve(no_bes_needed);  //Besselktd*r)   term in dielectric
          besyd.reserve(no_bes_needed);
 
+         besa.reserve(no_bes_needed);  //Besselktd*r)   term in first layer
+         besad.reserve(no_bes_needed);
+
+         besb.reserve(no_bes_needed);  //Besselktd*r)   term in first layer boundary
+         besbd.reserve(no_bes_needed);
 
      temp.reserve(2*no_bes_needed);
      cwrk.reserve(2*no_bes_needed);
@@ -764,12 +776,10 @@ void get_fields(vector<wire>& wires,
     cout<<"\n\nwire number: " <<wire_number<<"\nlayer number: "<<layer_number<<endl;
     cout<<"\nrelative epsilon: "<<epsilon_relative<<endl;
 
+//----------------------when points in the outside region(air)--------------------------------------
     if(wire_number>20) {
 
         cout<<"\nThe point is in the air."<<endl;
-
-        complex kt2= ko*ko-beta*beta;
-        complex kt=sqrt(kt2);
 
         for(int iw=0;iw<no_wires;++iw){
 
@@ -800,16 +810,106 @@ void get_fields(vector<wire>& wires,
 
                 for(int k=1;k<no_bes_needed;k++) hankad[k]=kt*(hanka[k-1]-double(k)/complex(zc[0],zc[1])*hanka[k]);
 
+            ez=ephi=hz=0.;
+            er=hphi=hr=0.;
+
             for(int ih=-max_harmonic;ih<=max_harmonic;++ih){
+
+                complex Xpoe_over_kt2(amps[iw*number_layer*no_harmonics*4+(ih+max_harmonic)*number_layer*4+ number_layer*4-2]*exp(-jj*double(ih)*phi));
+                complex Xpoh_over_kt2(amps[iw*number_layer*no_harmonics*4+(ih+max_harmonic)*number_layer*4+ number_layer*4-1]*exp(-jj*double(ih)*phi));
+
+                //cout<<"\nXpoe: "<<iw*number_layer*no_harmonics*4+(ih+max_harmonic)*number_layer*4+ number_layer*4-2;
+                //cout<<"\nXpoh: "<<iw*number_layer*no_harmonics*4+(ih+max_harmonic)*number_layer*4+ number_layer*4-1<<endl;
+
+                ez+=hanka[abs(ih)]/hankb[abs(ih)]*Xpoe_over_kt2*kt2;
+                hz+=hanka[abs(ih)]/hankb[abs(ih)]*Xpoh_over_kt2*kt2;
+
+                ephi+=jj*(-beta/r*(-jj*double(ih)))*hanka[abs(ih)]/hankb[abs(ih)]*Xpoe_over_kt2;
+
+                ephi+=jj*w_ua*hankad[abs(ih)]/hankb[abs(ih)]*Xpoh_over_kt2;
+
+                er+=jj*(-beta/r*(-jj*double(ih)))*hanka[abs(ih)]/hankb[abs(ih)]*Xpoe_over_kt2;
+
+                er+=jj*(-w_ua/r)*(-jj*double(ih))*hanka[abs(ih)]/hankb[abs(ih)]*Xpoh_over_kt2;
+
+                hphi+=jj*(-w_ea)*hankad[abs(ih)]/hankb[abs(ih)]*Xpoe_over_kt2;
+
+                hphi+=jj*(-beta/r*(-jj*double(ih)))*hanka[abs(ih)]/hankb[abs(ih)]*Xpoh_over_kt2;
+
+                hr+=jj*(w_ea/r)*(-jj*double(ih))*hanka[abs(ih)]/hankb[abs(ih)]*Xpoe_over_kt2;
+
+                hr+=jj*(-beta)*hankad[abs(ih)]/hankb[abs(ih)]*Xpoh_over_kt2;
+            }
+        }
+    } else{
+//----------------------when point is in the wire-------------------------------------------------
+        cout<<"\nPoint in the wire "<<wire_number<<endl;
+
+        const double ddx(x-wires[wire_number].centre[0]);
+        const double ddy(y-wires[wire_number].centre[1]);
+
+        const double r(sqrt(ddx*ddx+ddy*ddy));
+        const double phi(atan2(ddx,ddy));
+
+    //-----------------point in the first layer---------------------------------------
+        int index(0);
+        for(int iw=0;iw<wire_number;++iw){
+
+            index+=wires[iw].no_layers*no_harmonics*4;
+        }
+        cout<<"\nindex: "<<index<<endl;
+
+        if(layer_number==0){
+
+            cout<<"\nPoint in the first layer."<<endl;
+            cout<<"layer number: "<<layer_number<<endl;
+
+            double radius(wires[wire_number].radius[0]);
+            cout<<"\nradius: "<<radius<<endl;
+            cout<<"\nrelative epsilon: "<<epsilon_relative<<endl;
+
+            complex kt2_firstlayer(ko*ko*epsilon_relative-beta*beta);
+            complex kt_firstlayer(sqrt(kt2_firstlayer));
+
+            zc[0]=real(kt_firstlayer*radius);
+            zc[1]=imag(kt_firstlayer*radius);
+
+            S17DEF(&fnu,zc,&no_bes_needed,&scale,scale_len,&temp[0],&nz,&ifail);
+
+            for(int k=0;k<no_bes_needed;k++) besb[k]=complex(temp[2*k],temp[2*k+1]);
+
+            zc[0]=real(kt_firstlayer*r);
+            zc[1]=imag(kt_firstlayer*r);
+
+            S17DEF(&fnu,zc,&no_bes_needed,&scale,scale_len,&temp[0],&nz,&ifail);
+
+            for(int k=0;k<no_bes_needed;k++) besa[k]=complex(temp[2*k],temp[2*k+1]);
+
+             besad[0]=-kt_firstlayer*besa[1];
+
+            for(int k=1;k<no_bes_needed;k++) besad[k]=kt_firstlayer*(besa[k-1]-double(k)/complex(zc[0],zc[1])*besa[k]);
+
+            ez=ephi=hz=0.;
+            er=hphi=hr=0.;
+
+            for(int ih=-max_harmonic;ih<=max_harmonic;++ih){
+
+                complex Xpie_over_kt2(amps[index+(ih+max_harmonic)*wires[wire_number].no_layers*4+0]*exp(-jj*double(ih)*phi));
+                complex Xpih_over_kt2(amps[index+(ih+max_harmonic)*wires[wire_number].no_layers*4+0]*exp(-jj*double(ih)*phi));
+
 
             }
 
         }
+
+
+
+
     }
 
+    //cout<<"\nez: "<<ez<<endl;
 
 
-    ex=ey=ez=hx=hy=hz=ephi=0.;
 
 
 
