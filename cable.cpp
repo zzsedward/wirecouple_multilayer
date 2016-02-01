@@ -897,6 +897,14 @@ void get_fields(vector<wire>& wires,
                 complex Xpie_over_kt2(amps[index+(ih+max_harmonic)*wires[wire_number].no_layers*4+0]*exp(-jj*double(ih)*phi));
                 complex Xpih_over_kt2(amps[index+(ih+max_harmonic)*wires[wire_number].no_layers*4+0]*exp(-jj*double(ih)*phi));
 
+                //cout<<"\nXpie: "<<index+(ih+max_harmonic)*wires[wire_number].no_layers*4+0<<endl;
+
+                ez+=besa[abs(ih)]/besb[abs(ih)]*Xpie_over_kt2*kt2;
+                hz+=besa[abs(ih)]/besb[abs(ih)]*Xpih_over_kt2*kt2;
+
+                ephi+=jj*(-beta/r*(-jj*double(ih)))*besa[abs(ih)]/besb[abs(ih)]*Xpie_over_kt2;
+                ephi+=jj*w_ua*besad[abs(ih)]/besb[abs(ih)]*Xpih_over_kt2;
+
 
             }
 
