@@ -147,13 +147,13 @@ int main(int argc, char* argv[]){
 
          fout.close();
 
-         int no_solutions=get_determinant(wires,ko,complex(0.9*ko,0.0),max_harmonic,amps,which_mode,sv);
+         int no_solutions=get_determinant(wires,ko,complex(0.99*ko,0.0),max_harmonic,amps,which_mode,sv);
           //cout<<"\ncondition: "<<sv[0]/sv[no_solutions-1]<<endl;
           //cout<<"\nlargest sv: "<<sv[0]<<endl;
          //cout<<"\nsmallest sv: "<<sv[no_solutions-1]<<endl;*/
          // plot_field2(wires,ko,epsilon_rd,epsilon_r,complex(0.99*ko,0.0),max_harmonic,amps);
          complex ex,ey,ez,hx,hy,hz,ephi;
-         get_fields(wires,ko,(0.9*ko,0.),max_harmonic,amps,-10.8e-3,0.,ex,ey,ez,hx,hy,hz,ephi);
+         get_fields(wires,ko,(0.99*ko,0.),max_harmonic,amps,11.41e-3,0.,ex,ey,ez,hx,hy,hz,ephi);
 }
 
 
@@ -761,7 +761,7 @@ void get_fields(vector<wire>& wires,
         const int number_layer(wires[iw].no_layers);
 
         for(int il=number_layer-1;il>=0;--il){
-                //cout<<"\nlayer index: "<<il;
+                cout<<"\nlayer index: "<<il;
 
                 if(dist<wires[iw].radius[il]) {
 
@@ -772,7 +772,7 @@ void get_fields(vector<wire>& wires,
         }
     }
     cout<<"\n\nFind wire number and layer number: "<<endl;
-    cout<<"wire number: " <<wire_number<<"\nlayer number: "<<layer_number<<endl;
+    cout<<"wire number: " <<wire_number+1<<"\nlayer number: "<<layer_number+1<<endl;
     cout<<"\nrelative epsilon: "<<epsilon_relative<<endl;
 
 //----------------------when points in the outside region(air)--------------------------------------
@@ -850,27 +850,27 @@ void get_fields(vector<wire>& wires,
         const double r(sqrt(ddx*ddx+ddy*ddy));
         const double phi(atan2(ddx,ddy));
 
-        cout<<"\ndistance from origin: "<<r<<"\nangle: "<<phi<<endl;
+        cout<<"distance from origin: "<<r<<"\nangle: "<<phi<<endl;
     //-----------------point in the first layer---------------------------------------
         int index(0);
         for(int iw=0;iw<wire_number;++iw){
 
             index+=wires[iw].no_layers*no_harmonics*4;
         }
-        cout<<"\nnumber of elements before wire "<<wire_number+1<<": "<< index<<endl;
+        cout<<"number of elements before wire "<<wire_number+1<<": "<< index<<endl;
 
         if(layer_number==0){
 
             cout<<"\nPoint in the first layer."<<endl;
-            cout<<"layer number: "<<layer_number<<endl;
+            cout<<"layer number: "<<layer_number+1<<endl;
 
             double radius(wires[wire_number].radius[0]);
-            cout<<"\nradius: "<<radius<<endl;
-            cout<<"\nrelative epsilon: "<<epsilon_relative<<endl;
+            cout<<"layer radius: "<<radius<<endl;
+            cout<<"relative epsilon: "<<epsilon_relative<<endl;
 
             complex kt2_firstlayer(ko*ko*epsilon_relative-beta*beta);
             complex kt_firstlayer(sqrt(kt2_firstlayer));
-
+            cout<<"kt at first layer: "<<kt_firstlayer<<endl;
             complex w_e0(w_ea*epsilon_relative);
 
             zc[0]=real(kt_firstlayer*radius);
@@ -918,15 +918,15 @@ void get_fields(vector<wire>& wires,
             }
         }else{
             cout<<"\nPoint in the mid layer."<<endl;
-            cout<<"layer number: "<<layer_number<<endl;
+            cout<<"layer number: "<<layer_number+1<<endl;
 
             double radius(wires[wire_number].radius[layer_number]);
-            cout<<"\nradius: "<<radius<<endl;
-            cout<<"\ndistance to origin: "<<r<<endl;
-            cout<<"\nrelative epsilon: "<<epsilon_relative<<endl;
+            cout<<"layer radius: "<<radius<<endl;
+            cout<<"relative epsilon: "<<epsilon_relative<<endl;
 
             complex kt2m(ko*ko*epsilon_relative-beta*beta);
             complex ktm(sqrt(kt2m));
+            cout<<"kt at layer "<<layer_number+1<<endl;
 
             complex w_em(w_ea*epsilon_relative);
 
@@ -978,7 +978,7 @@ void get_fields(vector<wire>& wires,
         }
     }
 
-    //cout<<"\nez: "<<ez<<endl;
+    cout<<"\nez: "<<ez<<endl;
 
 
 }
