@@ -39,6 +39,7 @@ int main(int argc, char* argv[]){
     const double er_plastic(2.3);
     const double loss_tan(2.5e-4);
     const complex epsilon_rd(er_plastic, -er_plastic*loss_tan);
+        cout<<"epsilon dielectric: "<<epsilon_rd<<endl;
 
     const complex kod(ko*sqrt(epsilon_rd));
         cout<<"kod: "<<kod<<endl;
@@ -52,18 +53,16 @@ int main(int argc, char* argv[]){
     vector<wire> wires;
 
     wires.push_back(wire(-10e-3,0,radii,relative_epsilon,number_layers));
-        cout<<"\nwire1: "<<wires[0].radius[0]<<"  "<<wires[0].radius[1]<<endl;
-        cout<<"epsilonr: "<<relative_epsilon[0]<<"   "<<relative_epsilon[1]<<endl;
 
     wires.push_back(wire(10e-3,0,radii,relative_epsilon,number_layers));
-        cout<<"\nwire1: "<<wires[1].radius[0]<<"  "<<wires[1].radius[1]<<endl;
 
-     wires.push_back(wire(5e-3,10e-3,radii,relative_epsilon,number_layers));
+    wires.push_back(wire(5e-3,10e-3,radii,relative_epsilon,number_layers));
 
      const double min_beta(0.9*ko);
         cout<<"min beta: "<<min_beta<<endl;
 
      const double max_beta(1.1*ko);
+        cout<<"max beta: "<<max_beta<<endl;
 
      const int no_beta_steps(100);
 
@@ -148,13 +147,13 @@ int main(int argc, char* argv[]){
 
          fout.close();
 
-         int no_solutions=get_determinant(wires,ko,complex(0.9*ko,0.0),max_harmonic,amps,which_mode,sv);
+         int no_solutions=get_determinant(wires,ko,complex(0.99*ko,0.0),max_harmonic,amps,which_mode,sv);
           //cout<<"\ncondition: "<<sv[0]/sv[no_solutions-1]<<endl;
           //cout<<"\nlargest sv: "<<sv[0]<<endl;
          //cout<<"\nsmallest sv: "<<sv[no_solutions-1]<<endl;*/
          // plot_field2(wires,ko,epsilon_rd,epsilon_r,complex(0.99*ko,0.0),max_harmonic,amps);
          complex ex,ey,ez,hx,hy,hz,ephi;
-         get_fields(wires,ko,(0.9*ko,0.),max_harmonic,amps,5e-3,11.1e-3,ex,ey,ez,hx,hy,hz,ephi);
+         get_fields(wires,ko,(0.99*ko,0.),max_harmonic,amps,11.41e-3,0.,ex,ey,ez,hx,hy,hz,ephi);
 }
 
 
@@ -699,13 +698,58 @@ void get_fields(vector<wire>& wires,
                 complex& hy,
                 complex& hz,
                 complex& ephi){
-
+    ex=ey=ez=hx=hy=hz=ephi=0.;
+    complex er,hphi,hr;
     const int no_wires(wires.size());
     const int no_harmonics(2*max_harmonic+1);
 
+    const double w_ua(ko*constants::get_zo());
+    const double w_ea(ko*constants::get_yo());
+
+    complex kt2= ko*ko-beta*beta;
+    complex kt=sqrt(kt2);
+
+//--------------------bessel function declaration----------------------------
+    int nz,ifail,scale_len=1;
+
+         static complex jj(0.,1.);
+
+         char scale='u';
+
+         double r,zc[2],fnu=0.;
+
+     int no_bes_needed(std::max(2,max_harmonic+1)),hank_kind(2),hank_its;
+
+     static vector<complex> hanka,hankad,hankb,hankbd,besj,besjd,besy,besyd,besa,besad,besb,besbd;
+
+     static vector<double> temp;
+     static vector<double> cwrk;
+
+         hanka.reserve(no_bes_needed);  //Hank(kt*r)
+         hankad.reserve(no_bes_needed);
+
+         hankb.reserve(no_bes_needed);  //Hank(kt*r)
+         hankbd.reserve(no_bes_needed);
+
+         besj.reserve(no_bes_needed);  //Besselktd*r)   term in dielectric
+         besjd.reserve(no_bes_needed);
+
+         besy.reserve(no_bes_needed);  //Besselktd*r)   term in dielectric
+         besyd.reserve(no_bes_needed);
+
+         besa.reserve(no_bes_needed);  //Besselktd*r)   term in first layer
+         besad.reserve(no_bes_needed);
+
+         besb.reserve(no_bes_needed);  //Besselktd*r)   term in first layer boundary
+         besbd.reserve(no_bes_needed);
+
+     temp.reserve(2*no_bes_needed);
+     cwrk.reserve(2*no_bes_needed);
+//----------------------------------------------------------------------------------------------
+
     int wire_number(21),layer_number(21);
 
-    complex epsilon_relative(0.,0.);
+    complex epsilon_relative(1.,0.);
 
     for(int iw=0;iw<no_wires;++iw){
 
@@ -714,7 +758,7 @@ void get_fields(vector<wire>& wires,
 
         const double dist(sqrt(dx*dx+dy*dy));
 
-        const double number_layer(wires[iw].no_layers);
+        const int number_layer(wires[iw].no_layers);
 
         for(int il=number_layer-1;il>=0;--il){
                 cout<<"\nlayer index: "<<il;
@@ -727,14 +771,214 @@ void get_fields(vector<wire>& wires,
                 }
         }
     }
-
-    if(wire_number>20) epsilon_relative=(1.,0.);
-
-    cout<<"\n\nwire number: " <<wire_number<<"\nlayer number: "<<layer_number<<endl;
+    cout<<"\n\nFind wire number and layer number: "<<endl;
+    cout<<"wire number: " <<wire_number+1<<"\nlayer number: "<<layer_number+1<<endl;
     cout<<"\nrelative epsilon: "<<epsilon_relative<<endl;
 
-    ex=ey=ez=hx=hy=hz=ephi=0.;
+//----------------------when points in the outside region(air)--------------------------------------
+    if(wire_number>20) {
 
+        cout<<"\nThe point is in the air."<<endl;
+
+        for(int iw=0;iw<no_wires;++iw){
+
+            const double ddx(x-wires[iw].centre[0]);
+            const double ddy(y-wires[iw].centre[1]);
+
+            const double r(sqrt(ddx*ddx+ddy*ddy));
+            const double phi(atan2(ddx,ddy));
+
+            const int number_layer(wires[iw].no_layers);
+            cout<<"\nwire "<<iw<<" number of layers: "<<number_layer;
+
+            zc[0]=real(kt*wires[iw].radius[number_layer-1]);
+            zc[1]=imag(kt*wires[iw].radius[number_layer-1]);
+
+                S17DLF(&hank_kind,&fnu,zc,&no_bes_needed,&scale,scale_len,&temp[0],&hank_its,&ifail);
+
+                for(int k=0;k<no_bes_needed;k++) hankb[k]=complex(temp[2*k],temp[2*k+1]);
+
+            zc[0]=real(kt*r);
+            zc[1]=imag(kt*r);
+                    //cout<<"kt*r air: "<<zc[0]+jj*zc[1]<<endl;
+                S17DLF(&hank_kind,&fnu,zc,&no_bes_needed,&scale,scale_len,&temp[0],&hank_its,&ifail);
+
+                for(int k=0;k<no_bes_needed;k++) hanka[k]=complex(temp[2*k],temp[2*k+1]);
+
+                hankad[0]=-kt*hanka[1];
+
+                for(int k=1;k<no_bes_needed;k++) hankad[k]=kt*(hanka[k-1]-double(k)/complex(zc[0],zc[1])*hanka[k]);
+
+            ez=ephi=hz=0.;
+            er=hphi=hr=0.;
+
+            for(int ih=-max_harmonic;ih<=max_harmonic;++ih){
+
+                complex Xpoe_over_kt2(amps[iw*number_layer*no_harmonics*4+(ih+max_harmonic)*number_layer*4+ number_layer*4-2]*exp(-jj*double(ih)*phi));
+                complex Xpoh_over_kt2(amps[iw*number_layer*no_harmonics*4+(ih+max_harmonic)*number_layer*4+ number_layer*4-1]*exp(-jj*double(ih)*phi));
+
+                //cout<<"\nXpoe: "<<iw*number_layer*no_harmonics*4+(ih+max_harmonic)*number_layer*4+ number_layer*4-2;
+                //cout<<"\nXpoh: "<<iw*number_layer*no_harmonics*4+(ih+max_harmonic)*number_layer*4+ number_layer*4-1<<endl;
+
+                ez+=hanka[abs(ih)]/hankb[abs(ih)]*Xpoe_over_kt2*kt2;
+                hz+=hanka[abs(ih)]/hankb[abs(ih)]*Xpoh_over_kt2*kt2;
+
+                ephi+=jj*(-beta/r*(-jj*double(ih)))*hanka[abs(ih)]/hankb[abs(ih)]*Xpoe_over_kt2;
+
+                ephi+=jj*w_ua*hankad[abs(ih)]/hankb[abs(ih)]*Xpoh_over_kt2;
+
+                er+=jj*(-beta)*hanka[abs(ih)]/hankb[abs(ih)]*Xpoe_over_kt2;
+
+                er+=jj*(-w_ua/r)*(-jj*double(ih))*hanka[abs(ih)]/hankb[abs(ih)]*Xpoh_over_kt2;
+
+                hphi+=jj*(-w_ea)*hankad[abs(ih)]/hankb[abs(ih)]*Xpoe_over_kt2;
+
+                hphi+=jj*(-beta/r*(-jj*double(ih)))*hanka[abs(ih)]/hankb[abs(ih)]*Xpoh_over_kt2;
+
+                hr+=jj*(w_ea/r)*(-jj*double(ih))*hanka[abs(ih)]/hankb[abs(ih)]*Xpoe_over_kt2;
+
+                hr+=jj*(-beta)*hankad[abs(ih)]/hankb[abs(ih)]*Xpoh_over_kt2;
+            }
+        }
+    } else{
+//----------------------when point is in the wire-------------------------------------------------
+        cout<<"\nPoint in the wire "<<wire_number<<endl;
+
+        const double ddx(x-wires[wire_number].centre[0]);
+        const double ddy(y-wires[wire_number].centre[1]);
+
+        const double r(sqrt(ddx*ddx+ddy*ddy));
+        const double phi(atan2(ddx,ddy));
+
+        cout<<"distance from origin: "<<r<<"\nangle: "<<phi<<endl;
+    //-----------------point in the first layer---------------------------------------
+        int index(0);
+        for(int iw=0;iw<wire_number;++iw){
+
+            index+=wires[iw].no_layers*no_harmonics*4;
+        }
+        cout<<"number of elements before wire "<<wire_number+1<<": "<< index<<endl;
+
+        if(layer_number==0){
+
+            cout<<"\nPoint in the first layer."<<endl;
+            cout<<"layer number: "<<layer_number+1<<endl;
+
+            double radius(wires[wire_number].radius[0]);
+            cout<<"layer radius: "<<radius<<endl;
+            cout<<"relative epsilon: "<<epsilon_relative<<endl;
+
+            complex kt2_firstlayer(ko*ko*epsilon_relative-beta*beta);
+            complex kt_firstlayer(sqrt(kt2_firstlayer));
+            cout<<"kt at first layer: "<<kt_firstlayer<<endl;
+            complex w_e0(w_ea*epsilon_relative);
+
+            zc[0]=real(kt_firstlayer*radius);
+            zc[1]=imag(kt_firstlayer*radius);
+
+            S17DEF(&fnu,zc,&no_bes_needed,&scale,scale_len,&temp[0],&nz,&ifail);
+
+            for(int k=0;k<no_bes_needed;k++) besb[k]=complex(temp[2*k],temp[2*k+1]);
+
+            zc[0]=real(kt_firstlayer*r);
+            zc[1]=imag(kt_firstlayer*r);
+
+            S17DEF(&fnu,zc,&no_bes_needed,&scale,scale_len,&temp[0],&nz,&ifail);
+
+            for(int k=0;k<no_bes_needed;k++) besa[k]=complex(temp[2*k],temp[2*k+1]);
+
+             besad[0]=-kt_firstlayer*besa[1];
+
+            for(int k=1;k<no_bes_needed;k++) besad[k]=kt_firstlayer*(besa[k-1]-double(k)/complex(zc[0],zc[1])*besa[k]);
+
+            ez=ephi=hz=0.;
+            er=hphi=hr=0.;
+
+            for(int ih=-max_harmonic;ih<=max_harmonic;++ih){
+
+                complex Xpie_over_kt2(amps[index+(ih+max_harmonic)*wires[wire_number].no_layers*4+0]*exp(-jj*double(ih)*phi));
+                complex Xpih_over_kt2(amps[index+(ih+max_harmonic)*wires[wire_number].no_layers*4+0]*exp(-jj*double(ih)*phi));
+
+                //cout<<"\nXpie: "<<index+(ih+max_harmonic)*wires[wire_number].no_layers*4+0<<endl;
+
+                ez+=besa[abs(ih)]/besb[abs(ih)]*Xpie_over_kt2*kt2;
+                hz+=besa[abs(ih)]/besb[abs(ih)]*Xpih_over_kt2*kt2;
+
+                ephi+=jj*(-beta/r*(-jj*double(ih)))*besa[abs(ih)]/besb[abs(ih)]*Xpie_over_kt2;
+                ephi+=jj*w_ua*besad[abs(ih)]/besb[abs(ih)]*Xpih_over_kt2;
+
+                er+=jj*(-beta)*besad[abs(ih)]/besb[abs(ih)]*Xpie_over_kt2;
+                er+=jj*(-w_ua/r)*(-jj*double(ih))*besa[abs(ih)]/besb[abs(ih)]*Xpih_over_kt2;
+
+                hphi+=jj*(-w_e0)*besad[abs(ih)]/besb[abs(ih)]*Xpie_over_kt2;
+                hphi+=jj*(-beta/r*(-jj*double(ih)))*besa[abs(ih)]/besb[abs(ih)]*Xpih_over_kt2;
+
+                hr+=jj*(w_e0/r)*(-jj*double(ih))*besa[abs(ih)]/besb[abs(ih)]*Xpie_over_kt2;
+                hr+=jj*(-beta)*besad[abs(ih)]/besb[abs(ih)]*Xpih_over_kt2;
+            }
+        }else{
+            cout<<"\nPoint in the mid layer."<<endl;
+            cout<<"layer number: "<<layer_number+1<<endl;
+
+            double radius(wires[wire_number].radius[layer_number]);
+            cout<<"layer radius: "<<radius<<endl;
+            cout<<"relative epsilon: "<<epsilon_relative<<endl;
+
+            complex kt2m(ko*ko*epsilon_relative-beta*beta);
+            complex ktm(sqrt(kt2m));
+            cout<<"kt at layer "<<layer_number+1<<endl;
+
+            complex w_em(w_ea*epsilon_relative);
+
+            zc[0]=real(ktm*r);
+            zc[1]=imag(ktm*r);
+
+            S17DEF(&fnu,zc,&no_bes_needed,&scale,scale_len,&temp[0],&nz,&ifail);
+                for(int k=0;k<no_bes_needed;++k){besj[k]=complex(temp[2*k],temp[2*k+1]);}
+
+                besjd[0]=-ktm*besj[1];
+
+                for(int k=1;k<no_bes_needed;++k){besjd[k]=ktm*(besj[k-1]-double(k)/complex(zc[0],zc[1])*besj[k]);}
+
+            S17DCF(&fnu,zc,&no_bes_needed,&scale,scale_len,&temp[0],&nz,&cwrk[0],&ifail);
+                for(int k=0;k<no_bes_needed;++k){besy[k]=complex(temp[2*k],temp[2*k+1]);}
+
+                besyd[0]=-ktm*besy[1];
+
+                for(int k=1;k<no_bes_needed;++k){besyd[k]=ktm*(besy[k-1]-double(k)/complex(zc[0],zc[1])*besy[k]);}
+
+            ez=ephi=hz=0.;
+            er=hphi=hr=0.;
+
+            for(int ih=-max_harmonic;ih<=max_harmonic;++ih){
+                complex Xpej_over_kt2(amps[index+(ih+max_harmonic)*wires[wire_number].no_layers*4+layer_number*4-2]*exp(-jj*double(ih)*phi));
+                complex Xpey_over_kt2(amps[index+(ih+max_harmonic)*wires[wire_number].no_layers*4+layer_number*4-1]*exp(-jj*double(ih)*phi));
+                complex Xphj_over_kt2(amps[index+(ih+max_harmonic)*wires[wire_number].no_layers*4+layer_number*4-0]*exp(-jj*double(ih)*phi));
+                complex Xphy_over_kt2(amps[index+(ih+max_harmonic)*wires[wire_number].no_layers*4+layer_number*4+1]*exp(-jj*double(ih)*phi));
+
+                double sign(1.);
+                if(ih<0&&(abs(ih)%2!=0)) sign*=-1.;
+
+                ez+=sign*besj[abs(ih)]*Xpej_over_kt2+sign*besy[abs(ih)]*Xpey_over_kt2;
+                hz+=sign*besj[abs(ih)]*Xphj_over_kt2+sign*besy[abs(ih)]*Xphy_over_kt2;
+
+                ephi+=jj*(-beta/r*(-jj*double(ih)))*sign*(besj[abs(ih)]*Xpej_over_kt2+besy[abs(ih)]*Xpey_over_kt2);
+                ephi+=jj*w_ua*sign*(besjd[abs(ih)]*Xpej_over_kt2+besyd[abs(ih)]*Xpey_over_kt2);
+
+                er+=jj*(-beta)*sign*(besjd[abs(ih)]*Xpej_over_kt2+besyd[abs(ih)]*Xpey_over_kt2);
+                er+=jj*(-w_ua/r)*(-jj*double(ih))*sign*(besj[abs(ih)]*Xpej_over_kt2+besy[abs(ih)]*Xpey_over_kt2);
+
+                hphi+=jj*(-w_em)*sign*(besjd[abs(ih)]*Xpej_over_kt2+besyd[abs(ih)]*Xpey_over_kt2);
+                hphi+=jj*(-beta/r*(-jj*double(ih)))*sign*(besj[abs(ih)]*Xpej_over_kt2+besy[abs(ih)]*Xpey_over_kt2);
+
+                hr+=jj*(w_em/r)*(-jj*double(ih))*sign*(besj[abs(ih)]*Xpej_over_kt2+besy[abs(ih)]*Xpey_over_kt2);
+                hr+=jj*(-beta)*sign*(besjd[abs(ih)]*Xpej_over_kt2+besyd[abs(ih)]*Xpey_over_kt2);
+            }
+
+        }
+    }
+
+    cout<<"\nez: "<<ez<<endl;
 
 
 }
