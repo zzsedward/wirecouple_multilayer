@@ -983,13 +983,80 @@ void get_fields(vector<wire>& wires,
 
 }
 
-/*void plot_field(vector<wire>& wires,
+void plot_field(vector<wire>& wires,
                 const double ko,
                 const complex beta,
                 const int max_harmonic,
                 vector <complex>& amps){
+    ofstream Exout("Ex.csv");
+    ofstream Eyout("Ey.csv");
+    ofstream Ezout("Ez.csv");
+    ofstream Etout("Et.csv");
+    ofstream Hxout("Hx.csv");
+    ofstream Hyout("Hy.csv");
+    ofstream Hzout("Hz.csv");
+    ofstream Htout("Ht.csv");
 
-}*/
+    int npts(200);
+
+    double xmin(-20e-3),xmax(20e-3);
+    double ymin(-20e-3),ymin(20e-3);
+
+    const double dx(xmax-xmin)/double(npts);
+    const double dy(ymax-ymin)/double(ntps);
+
+    for(int j=0;j<npts;j++) Exout<<","<<ymin+double(j)*dy;
+    for(int j=0;j<npts;j++) Eyout<<","<<ymin+double(j)*dy;
+    for(int j=0;j<npts;j++) Ezout<<","<<ymin+double(j)*dy;
+    for(int j=0;j<npts;j++) Etout<<","<<ymin+double(j)*dy;
+
+    for(int j=0;j<npts;j++) Hxout<<","<<ymin+double(j)*dy;
+    for(int j=0;j<npts;j++) Hyout<<","<<ymin+double(j)*dy;
+    for(int j=0;j<npts;j++) Hzout<<","<<ymin+double(j)*dy;
+    for(int j=0;j<npts;j++) Htout<<","<<ymin+double(j)*dy;
+
+    for(int i=0;i<npts;++i) {
+         Exout<<"\n"<<xmin+double(i)*dx;
+         Eyout<<"\n"<<xmin+double(i)*dx;
+         Ezout<<"\n"<<xmin+double(i)*dx;
+         Etout<<"\n"<<xmin+double(i)*dx;
+
+         Hxout<<"\n"<<xmin+double(i)*dx;
+         Hyout<<"\n"<<xmin+double(i)*dx;
+         Hzout<<"\n"<<xmin+double(i)*dx;
+         Htout<<"\n"<<xmin+double(i)*dx;
+
+         complex ex,ey,ez,hx,hy,hz;
+
+         const double x(xmin+double(i)*dx);
+
+         for(int j=0;j<npts;++j){
+            const double y(ymin+double*(j)*dy);
+
+            get_fields(wires,ko,beta,max_harmonic,amps,x,y,ex,ey,ez,hx,hy,hz);
+
+            Exout<<","<<abs(ex);
+            Eyout<<","<<abs(ey);
+            Ezout<<","<<abs(ez);
+            Hxout<<","<<abs(hx);
+            Hyout<<","<<abs(hy);
+            Hzout<<","<<abs(hz);
+            Etout<<","<<sqrt(abs(ex)*abs(ex)+abs(ey)*abs(ey));
+            Htout<<","<<sqrt(abs(hx)*abs(hx)+abs(hy)*abs(hy));
+         }
+    }
+
+    Exout.close();
+    Eyout.close();
+    Ezout.close();
+    Etout.close();
+
+    Hxout.close();
+    Hyout.close();
+    Hzout.close();
+    Htout.close();
+
+}
 //------------------plot field with respect to angles phi at boundary--------------------------
 
 /*void plot_field2(vector<wire>& wires,
