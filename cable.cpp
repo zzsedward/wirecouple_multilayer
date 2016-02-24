@@ -13,7 +13,7 @@
 int main(int argc, char* argv[]){
     cout<<"Hello World!"<<endl;
 
-    const int max_harmonic(3); // ie will use from -this to +this
+    const int max_harmonic(1); // ie will use from -this to +this
 
     int number_layers(2);
 
@@ -78,7 +78,7 @@ int main(int argc, char* argv[]){
 
      ofstream fout("sv.csv");
 
-     int which_mode(0); // 0 means lowest sv, 1 next lowest etc
+     int which_mode(3); // 0 means lowest sv, 1 next lowest etc
 
      /*for(int i=0;i<no_beta_steps;++i) {fout<<","<<(min_beta+double(i)/double(no_beta_steps-1)*(max_beta-min_beta))/ko;}
 
@@ -840,6 +840,11 @@ void get_fields(vector<wire>& wires,
 
                 hr+=jj*(-beta)*hankad[abs(ih)]/hankb[abs(ih)]*Xpoh_over_kt2;
             }
+
+            ex+=ephi*cos(phi)+er*sin(phi);
+            ey+=-ephi*sin(phi)+er*cos(phi);
+            hx+=hphi*cos(phi)+hr*sin(phi);
+            hy+=-hphi*sin(phi)+hr*sin(phi);
         }
     } else{
 //----------------------when point is in the wire-------------------------------------------------
@@ -917,6 +922,12 @@ void get_fields(vector<wire>& wires,
                 hr+=jj*(w_e0/r)*(-jj*double(ih))*besa[abs(ih)]/besb[abs(ih)]*Xpie_over_kt2;
                 hr+=jj*(-beta)*besad[abs(ih)]/besb[abs(ih)]*Xpih_over_kt2;
             }
+
+            ex+=ephi*cos(phi)+er*sin(phi);
+            ey+=-ephi*sin(phi)+er*cos(phi);
+            hx+=hphi*cos(phi)+hr*sin(phi);
+            hy+=-hphi*sin(phi)+hr*sin(phi);
+
         }else{
             //cout<<"\nPoint in the mid layer."<<endl;
             //cout<<"layer number: "<<layer_number+1<<endl;
@@ -976,12 +987,15 @@ void get_fields(vector<wire>& wires,
                 hr+=jj*(-beta)*sign*(besjd[abs(ih)]*Xpej_over_kt2+besyd[abs(ih)]*Xpey_over_kt2);
             }
 
+            ex+=ephi*cos(phi)+er*sin(phi);
+            ey+=-ephi*sin(phi)+er*cos(phi);
+            hx+=hphi*cos(phi)+hr*sin(phi);
+            hy+=-hphi*sin(phi)+hr*sin(phi);
+
         }
     }
 
-
-
-    cout<<"\nephi: "<<ephi<<endl;
+    //cout<<"\nephi: "<<ephi<<endl;
 }
 
 void plot_field(vector<wire>& wires,
@@ -998,10 +1012,10 @@ void plot_field(vector<wire>& wires,
     ofstream Hzout("Hz.csv");
     ofstream Htout("Ht.csv");
 
-    int npts(500);
+    int npts(200);
 
-    double xmin(-6e-3),xmax(6e-3);
-    double ymin(-6e-3),ymax(6e-3);
+    double xmin(-5e-3),xmax(5e-3);
+    double ymin(-5e-3),ymax(5e-3);
 
     const double dx((xmax-xmin)/double(npts));
     const double dy((ymax-ymin)/double(npts));
