@@ -13,7 +13,7 @@
 int main(int argc, char* argv[]){
     cout<<"Hello World!"<<endl;
 
-    const int max_harmonic(1); // ie will use from -this to +this
+    const int max_harmonic(3); // ie will use from -this to +this
 
     int number_layers(2);
 
@@ -78,7 +78,7 @@ int main(int argc, char* argv[]){
 
      ofstream fout("sv.csv");
 
-     int which_mode(3); // 0 means lowest sv, 1 next lowest etc
+     int which_mode(5); // 0 means lowest sv, 1 next lowest etc
 
      /*for(int i=0;i<no_beta_steps;++i) {fout<<","<<(min_beta+double(i)/double(no_beta_steps-1)*(max_beta-min_beta))/ko;}
 
