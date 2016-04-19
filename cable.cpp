@@ -13,7 +13,7 @@
 int main(int argc, char* argv[]){
     cout<<"Hello World!"<<endl;
 
-    const int max_harmonic(3); // ie will use from -this to +this
+    const int max_harmonic(1); // ie will use from -this to +this
 
     int number_layers(2);
 
@@ -116,7 +116,7 @@ int main(int argc, char* argv[]){
     //------------beta variation with real part only-----------------------------------
        // double frequency_min(1e6),frequency_max(9.99e8);
 
-      /*  for(int i=0;i<no_beta_steps;++i) {
+        for(int i=0;i<no_beta_steps;++i) {
             //const double frequency(frequency_min+double(i)/double(no_beta_steps-1)*(frequency_max-frequency_min));
             //const complex beta(2.*constants::get_pi()*frequency/constants::get_co(),0);
          const complex beta(min_beta+double(i)/double(no_beta_steps-1)*(max_beta-min_beta),0.);
@@ -140,21 +140,21 @@ int main(int argc, char* argv[]){
         if(no_solutions>2){fout<<","<<sv[no_solutions-3];}
         if(no_solutions>3){fout<<","<<sv[no_solutions-4];}
         if(no_solutions>4){fout<<","<<sv[no_solutions-5];}
-        if(no_solutions>5){fout<<","<<sv[no_solutions-no_solutions];}
+        if(no_solutions>5){fout<<","<<sv[no_solutions-6];}
 
         //for(int s=0;s<no_solutions;s++){fout<<","<<sv[no_solutions-s-1];}
-	  }*/
+	  }
 
          fout.close();
 
-         int no_solutions=get_determinant(wires,ko,complex(0.99*ko,0.0),max_harmonic,amps,which_mode,sv);
+         //int no_solutions=get_determinant(wires,ko,complex(0.99*ko,0.0),max_harmonic,amps,which_mode,sv);
           //cout<<"\ncondition: "<<sv[0]/sv[no_solutions-1]<<endl;
           //cout<<"\nlargest sv: "<<sv[0]<<endl;
          //cout<<"\nsmallest sv: "<<sv[no_solutions-1]<<endl;*/
          // plot_field2(wires,ko,epsilon_rd,epsilon_r,complex(0.99*ko,0.0),max_harmonic,amps);
          //complex ex,ey,ez,hx,hy,hz,ephi;
          //get_fields(wires,ko,(0.99*ko,0.),max_harmonic,amps,11.41e-3,0.,ex,ey,ez,hx,hy,hz,ephi);
-         plot_field(wires,ko,complex(0.99*ko,0.0),max_harmonic,amps);
+         //plot_field(wires,ko,complex(0.99*ko,0.0),max_harmonic,amps);
 }
 
 
@@ -176,9 +176,7 @@ int get_determinant(vector<wire>& wires,
 
      int matrix_rank(0);   //number of boundary conditions * number of wires * number of harmonics
      for(int i=0;i<no_wires;i++){
-
         matrix_rank+=4*wires[i].no_layers*no_harmonics;
-
      }
 
      //cout<<"\nmatrix rank: "<<matrix_rank<<endl;
