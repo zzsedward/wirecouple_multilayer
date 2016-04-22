@@ -349,6 +349,17 @@ int get_determinant(vector<wire>& wires,
             for(int k=1;k<no_bes_needed;k++) {
                 hankad[k]=kt*(hanka[k-1]-double(k)/complex(zc[0],zc[1])*hanka[k]);}
 
+            zc[0]=real(kt*radius_ia);
+            zc[1]=imag(kt*radius_ia);
+
+            S17DEF(&fnu,zc,&no_bes_needed,&scale,scale_len,&temp[0],&nz,&ifail);
+
+            for(int k=0;k<no_bes_needed;k++) {besa[k]=complex(temp[2*k],temp[2*k+1]);}   //coupling bessel term
+
+            besad[0]=-kt*besa[1];
+
+            for(int k=1;k<no_bes_needed;k++) besad[k]=kt*(besa[k-1]-double(k)/complex(zc[0],zc[1])*besa[k]);
+
 //-----------------------------matrix fill-----------------------------------
         for(int ih=-max_harmonic;ih<=max_harmonic;++ih){
 
@@ -614,7 +625,7 @@ int get_determinant(vector<wire>& wires,
 
      }
 
-    //----------------convert to a real matrix-----------------------------------------------
+//------------convert to a real matrix--------------------------------
 
     for(int i=0;i<matrix_rank;++i){
 
