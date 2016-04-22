@@ -242,10 +242,11 @@ int get_determinant(vector<wire>& wires,
      const double w_ea(ko*constants::get_yo());
 
 //--------------------------matrix element calculation------------------------
+    int block_index=0;
+
     for(int ip=0;ip<no_wires;++ip){
 
         const int number_layers(wires[ip].no_layers);
-            //cout<<"\nnumber of layers: "<<number_layers<<endl;
 
             const double radius_m0(wires[ip].radius[0]);
             //cout<<"\nfirst layer radius: "<<radius_m0<<endl;
@@ -294,8 +295,7 @@ int get_determinant(vector<wire>& wires,
                 for(int k=1;k<no_bes_needed;++k){besj2d[k]=ktm1*(besj2[k-1]-double(k)/complex(zc[0],zc[1])*besj2[k]);}
 
             S17DCF(&fnu,zc,&no_bes_needed,&scale,scale_len,&temp[0],&nz,&cwrk[0],&ifail);
-                for(int k=0;k<no_bes_needed;++k){besy2[k]=complex(temp[2*k],temp[2*k+1]);
-                                                 }
+                for(int k=0;k<no_bes_needed;++k){besy2[k]=complex(temp[2*k],temp[2*k+1]);}
 
                 besy2d[0]=-ktm1*besy2[1];
 
@@ -334,7 +334,7 @@ int get_determinant(vector<wire>& wires,
 
                 for(int k=1;k<no_bes_needed;++k){besy3d[k]=ktmlast*(besy3[k-1]-double(k)/complex(zc[0],zc[1])*besy3[k]);}
 
-        //---------------------------outside field----------------------------------
+//----------------------outside field----------------------------------
 
             zc[0]=real(kt*radius_lastlayer);
             zc[1]=imag(kt*radius_lastlayer);
@@ -352,7 +352,8 @@ int get_determinant(vector<wire>& wires,
 //-----------------------------matrix fill-----------------------------------
         for(int ih=-max_harmonic;ih<=max_harmonic;++ih){
 
-            const int ii(ip*no_harmonics*number_layers+(ih+max_harmonic)*number_layers);
+//-------------boundary conditions for first layer--------------
+            const int ii(block_index+(ih+max_harmonic)*number_layers);
 
             double sign(1.);
             if(ih<0&&(abs(ih)%2!=0)) sign*=-1.;
@@ -451,8 +452,8 @@ int get_determinant(vector<wire>& wires,
                     for(int k=1;k<no_bes_needed;++k){besy2d[k]=kt_mplus1*(besy2[k-1]-double(k)/complex(zc[0],zc[1])*besy2[k]);}
 
             //---------------
-                const int iia(ip*no_harmonics*number_layers+(ih+max_harmonic)*number_layers+im);
-                const int iib(ip*no_harmonics*number_layers+(ih+max_harmonic)*number_layers+im+1);
+                const int iia(block_index+(ih+max_harmonic)*number_layers+im);
+                const int iib(block_index+(ih+max_harmonic)*number_layers+im+1);
 
             //------------------Ez from ez------------------------------
                 cmatrix[4*iia+0+(4*iia-2)*matrix_rank]=sign*besj1[abs(ih)]*kt2;
@@ -498,7 +499,7 @@ int get_determinant(vector<wire>& wires,
 
 //---------boundary condition for the very outside layer---------------------
 
-            const int iii(ip*no_harmonics*number_layers+(ih+max_harmonic)*number_layers+number_layers-1);
+            const int iii(block_index+(ih+max_harmonic)*number_layers+number_layers-1);
 
         //---------------------ez from ez inside and outside---------------
             cmatrix[4*iii+0+(4*iii-2)*matrix_rank]=sign*besj3[abs(ih)]*kt2;
@@ -533,9 +534,13 @@ int get_determinant(vector<wire>& wires,
             cmatrix[4*iii+3+(4*iii+3)*matrix_rank]=-jj*kt2/kt2*(-beta/radius_lastlayer*(-jj*double(ih)))*1.;
 
         }
+
+        block_index+=number_layers*no_harmonics;
     }
 
 //-----------------------coupling terms---------------------------------------
+    int boundary_index=0;
+
     for(int ia=0;ia<no_wires;++ia){
 
         const int ia_no_layers(wires[ia].no_layers);
@@ -553,6 +558,7 @@ int get_determinant(vector<wire>& wires,
 
             for(int k=1;k<no_bes_needed;k++) besad[k]=kt*(besa[k-1]-double(k)/complex(zc[0],zc[1])*besa[k]);
 
+        int coeff_index=0;
 
         for(int ib=0; ib<no_wires;++ib){
 
@@ -564,11 +570,11 @@ int get_determinant(vector<wire>& wires,
 
                 for(int ja=-max_harmonic;ja<=max_harmonic;++ja){
 
-                    const int iaih(ia*ia_no_layers*no_harmonics+(ja+max_harmonic)*ia_no_layers+ia_no_layers-1);
+                    const int iaih(boundary_index+(ja+max_harmonic)*ia_no_layers+ia_no_layers-1);
 
                     for (int jb=-max_harmonic;jb<=max_harmonic;++jb){
 
-                        const int ibih(ib*no_harmonics*ib_no_layers+(jb+max_harmonic)*ib_no_layers+ib_no_layers);
+                        const int ibih(coeff_index+(jb+max_harmonic)*ib_no_layers+ib_no_layers);
 
                         cmatrix[4*iaih+0+(4*ibih-2)*matrix_rank]=-1.*T(ja,jb)*kt2;
 
@@ -584,7 +590,11 @@ int get_determinant(vector<wire>& wires,
                     }
                 }
             }
+
+            coeff_index+=no_harmonics*ib_no_layers;
         }
+
+        boundary_index+=no_harmonics+ia_no_layers;
     }
 
 //-----------------------output the matrix------------------------------
