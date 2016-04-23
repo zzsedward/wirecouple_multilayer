@@ -361,193 +361,242 @@ int get_determinant(vector<wire>& wires,
             for(int k=1;k<no_bes_needed;k++) besad[k]=kt*(besa[k-1]-double(k)/complex(zc[0],zc[1])*besa[k]);
 
 //-----------------------------matrix fill-----------------------------------
-        for(int ih=-max_harmonic;ih<=max_harmonic;++ih){
+        int coeff_index=0;
+
+        for(int iq=0; iq<no_wires;++iq){
+
+            const int iq_no_layers(wires[iq].no_layers);
+
+            if(iq!=ip){
+
+                wire_coupling_termer T(wires[ip], wires[iq],max_harmonic,kt);
+
+                for(int ih=-max_harmonic;ih<=max_harmonic;++ih){
 
 //-------------boundary conditions for first layer--------------
-            const int ii(block_index+(ih+max_harmonic)*number_layers);
+                    const int ii(block_index+(ih+max_harmonic)*number_layers);
 
-            double sign(1.);
-            if(ih<0&&(abs(ih)%2!=0)) sign*=-1.;
-        //------------ez from ez inside and ez outside--------------------
-            cmatrix[4*ii+0+(4*ii+0)*matrix_rank]=kt2;
-            cmatrix[4*ii+0+(4*ii+2)*matrix_rank]=-sign*besj2[abs(ih)]*kt2;
-            cmatrix[4*ii+0+(4*ii+3)*matrix_rank]=-sign*besy2[abs(ih)]*kt2;
-            //cout<<"\nrow: "<<4*ii+0<<"  column: "<<(4*ii+3)<<": "<<besy2[abs(ih)]<<endl;
-        //------------hz from hz inside and hz outside---------------------
-            cmatrix[4*ii+1+(4*ii+1)*matrix_rank]=kt2;
-            cmatrix[4*ii+1+(4*ii+4)*matrix_rank]=-sign*besj2[abs(ih)]*kt2;
-            cmatrix[4*ii+1+(4*ii+5)*matrix_rank]=-sign*besy2[abs(ih)]*kt2;
+                    double sign(1.);
+                    if(ih<0&&(abs(ih)%2!=0)) sign*=-1.;
+                //------------ez from ez inside and ez outside--------------------
+                    cmatrix[4*ii+0+(4*ii+0)*matrix_rank]=kt2;
+                    cmatrix[4*ii+0+(4*ii+2)*matrix_rank]=-sign*besj2[abs(ih)]*kt2;
+                    cmatrix[4*ii+0+(4*ii+3)*matrix_rank]=-sign*besy2[abs(ih)]*kt2;
+                    //cout<<"\nrow: "<<4*ii+0<<"  column: "<<(4*ii+3)<<": "<<besy2[abs(ih)]<<endl;
+                //------------hz from hz inside and hz outside---------------------
+                    cmatrix[4*ii+1+(4*ii+1)*matrix_rank]=kt2;
+                    cmatrix[4*ii+1+(4*ii+4)*matrix_rank]=-sign*besj2[abs(ih)]*kt2;
+                    cmatrix[4*ii+1+(4*ii+5)*matrix_rank]=-sign*besy2[abs(ih)]*kt2;
 
-        //------------ephi from ez inside and ez outside-------------------
-            cmatrix[4*ii+2+(4*ii+0)*matrix_rank]=jj*kt2/kt2m0*(-beta/radius_m0*(-jj*double(ih)))*1.;
-            cmatrix[4*ii+2+(4*ii+2)*matrix_rank]=-jj*kt2/kt2m1*(-beta/radius_m0*(-jj)*double(ih))*sign*besj2[abs(ih)];
-            cmatrix[4*ii+2+(4*ii+3)*matrix_rank]=-jj*kt2/kt2m1*(-beta/radius_m0*(-jj)*double(ih))*sign*besy2[abs(ih)];
+                //------------ephi from ez inside and ez outside-------------------
+                    cmatrix[4*ii+2+(4*ii+0)*matrix_rank]=jj*kt2/kt2m0*(-beta/radius_m0*(-jj*double(ih)))*1.;
+                    cmatrix[4*ii+2+(4*ii+2)*matrix_rank]=-jj*kt2/kt2m1*(-beta/radius_m0*(-jj)*double(ih))*sign*besj2[abs(ih)];
+                    cmatrix[4*ii+2+(4*ii+3)*matrix_rank]=-jj*kt2/kt2m1*(-beta/radius_m0*(-jj)*double(ih))*sign*besy2[abs(ih)];
 
-        //-----------ephi from hz inside and hz outside--------------------
-            cmatrix[4*ii+2+(4*ii+1)*matrix_rank]=jj*kt2/kt2m0*w_ua*(besj1d[abs(ih)]/besj1[abs(ih)]);
-            cmatrix[4*ii+2+(4*ii+4)*matrix_rank]=-jj*kt2/kt2m1*w_ua*sign*besj2d[abs(ih)];
-            cmatrix[4*ii+2+(4*ii+5)*matrix_rank]=-jj*kt2/kt2m1*w_ua*sign*besy2d[abs(ih)];
+                //-----------ephi from hz inside and hz outside--------------------
+                    cmatrix[4*ii+2+(4*ii+1)*matrix_rank]=jj*kt2/kt2m0*w_ua*(besj1d[abs(ih)]/besj1[abs(ih)]);
+                    cmatrix[4*ii+2+(4*ii+4)*matrix_rank]=-jj*kt2/kt2m1*w_ua*sign*besj2d[abs(ih)];
+                    cmatrix[4*ii+2+(4*ii+5)*matrix_rank]=-jj*kt2/kt2m1*w_ua*sign*besy2d[abs(ih)];
 
-        //-----------hphi from ez inside and ez outside-----------------------
-            cmatrix[4*ii+3+(4*ii+0)*matrix_rank]=jj*kt2/kt2m0*(-w_em0)*besj1d[abs(ih)]/besj1[abs(ih)];
-            cmatrix[4*ii+3+(4*ii+2)*matrix_rank]=-jj*kt2/kt2m1*(-w_em1)*sign*besj2d[abs(ih)];
-            cmatrix[4*ii+3+(4*ii+3)*matrix_rank]=-jj*kt2/kt2m1*(-w_em1)*sign*besy2d[abs(ih)];
+                //-----------hphi from ez inside and ez outside-----------------------
+                    cmatrix[4*ii+3+(4*ii+0)*matrix_rank]=jj*kt2/kt2m0*(-w_em0)*besj1d[abs(ih)]/besj1[abs(ih)];
+                    cmatrix[4*ii+3+(4*ii+2)*matrix_rank]=-jj*kt2/kt2m1*(-w_em1)*sign*besj2d[abs(ih)];
+                    cmatrix[4*ii+3+(4*ii+3)*matrix_rank]=-jj*kt2/kt2m1*(-w_em1)*sign*besy2d[abs(ih)];
 
-        //----------hphi from hz inside and hz outside------------------------
-            cmatrix[4*ii+3+(4*ii+1)*matrix_rank]=jj*kt2/kt2m0*(-beta/radius_m0*(-jj*double(ih)))*1.;
-            cmatrix[4*ii+3+(4*ii+4)*matrix_rank]=-jj*kt2/kt2m1*(-beta/radius_m0*(-jj*double(ih)))*sign*besj2[abs(ih)];
-            cmatrix[4*ii+3+(4*ii+5)*matrix_rank]=-jj*kt2/kt2m1*(-beta/radius_m0*(-jj*double(ih)))*sign*besy2[abs(ih)];
+                //----------hphi from hz inside and hz outside------------------------
+                    cmatrix[4*ii+3+(4*ii+1)*matrix_rank]=jj*kt2/kt2m0*(-beta/radius_m0*(-jj*double(ih)))*1.;
+                    cmatrix[4*ii+3+(4*ii+4)*matrix_rank]=-jj*kt2/kt2m1*(-beta/radius_m0*(-jj*double(ih)))*sign*besj2[abs(ih)];
+                    cmatrix[4*ii+3+(4*ii+5)*matrix_rank]=-jj*kt2/kt2m1*(-beta/radius_m0*(-jj*double(ih)))*sign*besy2[abs(ih)];
 
-//----------boundary conditions for middle layers--------------------------
-            for(int im=1;im<number_layers-1;im++){
-                    //cout<<"\ndid I go in?"<<endl;
+                    for(int jh=-max_harmonic; jh<=max_harmonic; ++jh){
 
-            //------------inside field----------------------------------------
-                const double radius_m(wires[ip].radius[im]);
+                        const int iqjh(coeff_index+(jh+max_harmonic)*iq_no_layers);
+                        //------ez from ez----
+                        cmatrix[4*ii+0+(4*iqjh+0)*matrix_rank]=T(ih,jh)*kt2;
+                        cmatrix[4*ii+0+(4*iqjh+2)*matrix_rank]=-sign*besj2[abs(ih)]*T(ih,jh)*kt2;
+                        cmatrix[4*ii+0+(4*iqjh+3)*matrix_rank]=-sign*besy2[abs(ih)]*T(ih,jh)*kt2;
+                        //-----hz from hz------
+                        cmatrix[4*ii+1+(4*iqjh+1)*matrix_rank]=T(ih,jh)*kt2;
+                        cmatrix[4*ii+1+(4*iqjh+4)*matrix_rank]=-sign*besj2[abs(ih)]*T(ih,jh)*kt2;
+                        cmatrix[4*ii+1+(4*iqjh+5)*matrix_rank]=-sign*besy2[abs(ih)]*T(ih,jh)*kt2;
+                        //-----ephi from ez-----
+                        cmatrix[4*ii+2+(4*iqjh+0)*matrix_rank]=jj*kt2/kt2m0*(-beta/radius_m0*(-jj*double(ih)))*T(ih,jh);
+                        cmatrix[4*ii+2+(4*iqjh+2)*matrix_rank]=-sign*jj*kt2/kt2m1*(-beta/radius_m0)*(-jj*double(ih))*besj2[abs(ih)]*T(ih,jh);
+                        cmatrix[4*ii+2+(4*iqjh+3)*matrix_rank]=-sign*jj*kt2/kt2m1*(-beta/radius_m0)*(-jj*double(ih))*besy2[abs(ih)]*T(ih,jh);
+                        //------ephi from hz----
+                        cmatrix[4*ii+2+(4*iqjh+1)*matrix_rank]=jj*kt2/kt2m0*w_ua*(besj1d[abs(ih)]/besj1[abs(ih)])*T(ih,jh);
+                        cmatrix[4*ii+2+(4*iqjh+4)*matrix_rank]=-sign*jj*kt2/kt2m1*w_ua*besj2d[abs(ih)]*T(ih,jh);
+                        cmatrix[4*ii+2+(4*iqjh+5)*matrix_rank]=-sign*jj*kt2/kt2m1*w_ua*besy2d[abs(ih)]*T(ih,jh);
+                        //------hphi from ez----
+                        cmatrix[4*ii+3+(4*iqjh+0)*matrix_rank]=jj*kt2/kt2m0*(-w_em0)*besj1d[abs(ih)]/besj1[abs(ih)]*T(ih,jh);
+                        cmatrix[4*ii+3+(4*iqjh+2)*matrix_rank]=-jj*kt2/kt2m1*(-w_em1)*sign*besj2d[abs(ih)]*T(ih,jh);
+                        cmatrix[4*ii+3+(4*iqjh+3)*matrix_rank]=-jj*kt2/kt2m1*(-w_em1)*sign*besy2d[abs(ih)]*T(ih,jh);
+                        //------hphi from hz----
+                        cmatrix[4*ii+3+(4*iqjh+1)*matrix_rank]=jj*kt2/kt2m0*(-beta/radius_m0*(-jj*double(ih)))*T(ih,jh).;
+                        cmatrix[4*ii+3+(4*iqjh+4)*matrix_rank]=-jj*kt2/kt2m1*(-beta/radius_m0*(-jj*double(ih)))*sign*besj2[abs(ih)]*T(ih,jh);
+                        cmatrix[4*ii+3+(4*iqjh+5)*matrix_rank]=-jj*kt2/kt2m1*(-beta/radius_m0*(-jj*double(ih)))*sign*besy2[abs(ih)]*T(ih,jh);
 
-                const complex epsilon_m(wires[ip].epsilonr[im]);
+                    }
 
-                const complex ko_m(ko*sqrt(epsilon_m));
+        //----------boundary conditions for middle layers--------------------------
+                    for(int im=1;im<number_layers-1;im++){
+                            //cout<<"\ndid I go in?"<<endl;
 
-                const complex kt2_m(ko_m*ko_m-beta*beta);
+                    //------------inside field----------------------------------------
+                        const double radius_m(wires[ip].radius[im]);
 
-                const complex kt_m(sqrt(kt2_m));
+                        const complex epsilon_m(wires[ip].epsilonr[im]);
 
-                const complex w_em(w_ea*epsilon_m);
+                        const complex ko_m(ko*sqrt(epsilon_m));
 
-                zc[0]=real(kt_m*radius_m);
-                zc[1]=imag(kt_m*radius_m);
+                        const complex kt2_m(ko_m*ko_m-beta*beta);
 
-                S17DEF(&fnu,zc,&no_bes_needed,&scale,scale_len,&temp[0],&nz,&ifail);
+                        const complex kt_m(sqrt(kt2_m));
 
-                    for(int k=0;k<no_bes_needed;++k){besj1[k]=complex(temp[2*k],temp[2*k+1]);}
+                        const complex w_em(w_ea*epsilon_m);
 
-                    besj1d[0]=-kt_m*besj1[1];
+                        zc[0]=real(kt_m*radius_m);
+                        zc[1]=imag(kt_m*radius_m);
 
-                    for(int k=1;k<no_bes_needed;++k){besj1d[k]=kt_m*(besj1[k-1]-double(k)/complex(zc[0],zc[1])*besj1[k]);}
+                        S17DEF(&fnu,zc,&no_bes_needed,&scale,scale_len,&temp[0],&nz,&ifail);
 
-                S17DCF(&fnu,zc,&no_bes_needed,&scale,scale_len,&temp[0],&nz,&cwrk[0],&ifail);
+                            for(int k=0;k<no_bes_needed;++k){besj1[k]=complex(temp[2*k],temp[2*k+1]);}
 
-                    for(int k=0;k<no_bes_needed;++k){besy1[k]=complex(temp[2*k],temp[2*k+1]);}
+                            besj1d[0]=-kt_m*besj1[1];
 
-                    besy1d[0]=-kt_m*besy1[1];
+                            for(int k=1;k<no_bes_needed;++k){besj1d[k]=kt_m*(besj1[k-1]-double(k)/complex(zc[0],zc[1])*besj1[k]);}
 
-                    for(int k=1;k<no_bes_needed;++k){besy1d[k]=kt_m*(besy1[k-1]-double(k)/complex(zc[0],zc[1])*besy1[k]);}
+                        S17DCF(&fnu,zc,&no_bes_needed,&scale,scale_len,&temp[0],&nz,&cwrk[0],&ifail);
 
-            //--------------outside field----------------------------------
-                const complex epsilon_mplus1(wires[ip].epsilonr[im+1]);
+                            for(int k=0;k<no_bes_needed;++k){besy1[k]=complex(temp[2*k],temp[2*k+1]);}
 
-                const complex ko_mplus1(ko*sqrt(epsilon_mplus1));
+                            besy1d[0]=-kt_m*besy1[1];
 
-                const complex kt2_mplus1(ko_mplus1*ko_mplus1-beta*beta);
+                            for(int k=1;k<no_bes_needed;++k){besy1d[k]=kt_m*(besy1[k-1]-double(k)/complex(zc[0],zc[1])*besy1[k]);}
 
-                const complex kt_mplus1(sqrt(kt2_mplus1));
+                    //--------------outside field----------------------------------
+                        const complex epsilon_mplus1(wires[ip].epsilonr[im+1]);
 
-                const complex w_emplus1(w_ea*epsilon_mplus1);
-                zc[0]=real(kt_mplus1*radius_m);
-                zc[1]=imag(kt_mplus1*radius_m);
+                        const complex ko_mplus1(ko*sqrt(epsilon_mplus1));
 
-                S17DEF(&fnu,zc,&no_bes_needed,&scale,scale_len,&temp[0],&nz,&ifail);
+                        const complex kt2_mplus1(ko_mplus1*ko_mplus1-beta*beta);
 
-                    for(int k=0;k<no_bes_needed;++k){besj2[k]=complex(temp[2*k],temp[2*k+1]);}
+                        const complex kt_mplus1(sqrt(kt2_mplus1));
 
-                    besj2d[0]=-kt_mplus1*besj2[1];
+                        const complex w_emplus1(w_ea*epsilon_mplus1);
+                        zc[0]=real(kt_mplus1*radius_m);
+                        zc[1]=imag(kt_mplus1*radius_m);
 
-                    for(int k=1;k<no_bes_needed;++k){besj2d[k]=kt_mplus1*(besj2[k-1]-double(k)/complex(zc[0],zc[1])*besj2[k]);}
+                        S17DEF(&fnu,zc,&no_bes_needed,&scale,scale_len,&temp[0],&nz,&ifail);
 
-                S17DCF(&fnu,zc,&no_bes_needed,&scale,scale_len,&temp[0],&nz,&cwrk[0],&ifail);
-                    for(int k=0;k<no_bes_needed;++k){besy2[k]=complex(temp[2*k],temp[2*k+1]);}
+                            for(int k=0;k<no_bes_needed;++k){besj2[k]=complex(temp[2*k],temp[2*k+1]);}
 
-                    besy2d[0]=-kt_mplus1*besy2[1];
+                            besj2d[0]=-kt_mplus1*besj2[1];
 
-                    for(int k=1;k<no_bes_needed;++k){besy2d[k]=kt_mplus1*(besy2[k-1]-double(k)/complex(zc[0],zc[1])*besy2[k]);}
+                            for(int k=1;k<no_bes_needed;++k){besj2d[k]=kt_mplus1*(besj2[k-1]-double(k)/complex(zc[0],zc[1])*besj2[k]);}
 
-            //---------------
-                const int iia(block_index+(ih+max_harmonic)*number_layers+im);
-                const int iib(block_index+(ih+max_harmonic)*number_layers+im+1);
+                        S17DCF(&fnu,zc,&no_bes_needed,&scale,scale_len,&temp[0],&nz,&cwrk[0],&ifail);
+                            for(int k=0;k<no_bes_needed;++k){besy2[k]=complex(temp[2*k],temp[2*k+1]);}
 
-            //------------------Ez from ez------------------------------
-                cmatrix[4*iia+0+(4*iia-2)*matrix_rank]=sign*besj1[abs(ih)]*kt2;
-                cmatrix[4*iia+0+(4*iia-1)*matrix_rank]=sign*besy1[abs(ih)]*kt2;
-                cmatrix[4*iia+0+(4*iib-2)*matrix_rank]=-sign*besj2[abs(ih)]*kt2;
-                cmatrix[4*iia+0+(4*iib-1)*matrix_rank]=-sign*besy2[abs(ih)]*kt2;
+                            besy2d[0]=-kt_mplus1*besy2[1];
 
-//
-//                cout<<"\nez from ez inside and outside: "<<4*iia+0+(4*iib-1)*matrix_rank<<endl;
+                            for(int k=1;k<no_bes_needed;++k){besy2d[k]=kt_mplus1*(besy2[k-1]-double(k)/complex(zc[0],zc[1])*besy2[k]);}
 
-            //------------------Hz from hz------------------------------
-                cmatrix[4*iia+1+(4*iia+0)*matrix_rank]=sign*besj1[abs(ih)]*kt2;
-                cmatrix[4*iia+1+(4*iia+1)*matrix_rank]=sign*besy1[abs(ih)]*kt2;
-                cmatrix[4*iia+1+(4*iib+0)*matrix_rank]=-sign*besj2[abs(ih)]*kt2;
-                cmatrix[4*iia+1+(4*iib+1)*matrix_rank]=-sign*besy2[abs(ih)]*kt2;
+                    //---------------
+                        const int iia(block_index+(ih+max_harmonic)*number_layers+im);
+                        const int iib(block_index+(ih+max_harmonic)*number_layers+im+1);
 
-            //------------------Ephi from ez----------------------------
-                cmatrix[4*iia+2+(4*iia-2)*matrix_rank]=jj*kt2/kt2_m*(-beta/radius_m*(-jj*double(ih)))*sign*besj1[abs(ih)];
-                cmatrix[4*iia+2+(4*iia-1)*matrix_rank]=jj*kt2/kt2_m*(-beta/radius_m*(-jj*double(ih)))*sign*besy1[abs(ih)];
-                cmatrix[4*iia+2+(4*iib-2)*matrix_rank]=-jj*kt2/kt2_mplus1*(-beta/radius_m*(-jj*double(ih)))*sign*besj2[abs(ih)];
-                cmatrix[4*iia+2+(4*iib-1)*matrix_rank]=-jj*kt2/kt2_mplus1*(-beta/radius_m*(-jj*double(ih)))*sign*besy2[abs(ih)];
+                    //------------------Ez from ez------------------------------
+                        cmatrix[4*iia+0+(4*iia-2)*matrix_rank]=sign*besj1[abs(ih)]*kt2;
+                        cmatrix[4*iia+0+(4*iia-1)*matrix_rank]=sign*besy1[abs(ih)]*kt2;
+                        cmatrix[4*iia+0+(4*iib-2)*matrix_rank]=-sign*besj2[abs(ih)]*kt2;
+                        cmatrix[4*iia+0+(4*iib-1)*matrix_rank]=-sign*besy2[abs(ih)]*kt2;
 
-            //------------------Ephi from hz----------------------------
-                cmatrix[4*iia+2+(4*iia+0)*matrix_rank]=jj*kt2/kt2_m*w_ua*sign*besj1d[abs(ih)];
-                cmatrix[4*iia+2+(4*iia+1)*matrix_rank]=jj*kt2/kt2_m*w_ua*sign*besy1d[abs(ih)];
-                cmatrix[4*iia+2+(4*iib+0)*matrix_rank]=-jj*kt2/kt2_mplus1*w_ua*sign*besj2d[abs(ih)];
-                cmatrix[4*iia+2+(4*iib+1)*matrix_rank]=-jj*kt2/kt2_mplus1*w_ua*sign*besy2d[abs(ih)];
+        //
+        //                cout<<"\nez from ez inside and outside: "<<4*iia+0+(4*iib-1)*matrix_rank<<endl;
 
-            //------------------Hphi from ez------------------------------
-                cmatrix[4*iia+3+(4*iia-2)*matrix_rank]=jj*kt2/kt2_m*(-w_em)*sign*besj1d[abs(ih)];
-                cmatrix[4*iia+3+(4*iia-1)*matrix_rank]=jj*kt2/kt2_m*(-w_em)*sign*besy1d[abs(ih)];
-                cmatrix[4*iia+3+(4*iib-2)*matrix_rank]=-jj*kt2/kt2_mplus1*(-w_emplus1)*sign*besj2d[abs(ih)];
-                cmatrix[4*iia+3+(4*iib-1)*matrix_rank]=-jj*kt2/kt2_mplus1*(-w_emplus1)*sign*besy2d[abs(ih)];
+                    //------------------Hz from hz------------------------------
+                        cmatrix[4*iia+1+(4*iia+0)*matrix_rank]=sign*besj1[abs(ih)]*kt2;
+                        cmatrix[4*iia+1+(4*iia+1)*matrix_rank]=sign*besy1[abs(ih)]*kt2;
+                        cmatrix[4*iia+1+(4*iib+0)*matrix_rank]=-sign*besj2[abs(ih)]*kt2;
+                        cmatrix[4*iia+1+(4*iib+1)*matrix_rank]=-sign*besy2[abs(ih)]*kt2;
 
-            //------------------Hphi from hz-------------------------------
+                    //------------------Ephi from ez----------------------------
+                        cmatrix[4*iia+2+(4*iia-2)*matrix_rank]=jj*kt2/kt2_m*(-beta/radius_m*(-jj*double(ih)))*sign*besj1[abs(ih)];
+                        cmatrix[4*iia+2+(4*iia-1)*matrix_rank]=jj*kt2/kt2_m*(-beta/radius_m*(-jj*double(ih)))*sign*besy1[abs(ih)];
+                        cmatrix[4*iia+2+(4*iib-2)*matrix_rank]=-jj*kt2/kt2_mplus1*(-beta/radius_m*(-jj*double(ih)))*sign*besj2[abs(ih)];
+                        cmatrix[4*iia+2+(4*iib-1)*matrix_rank]=-jj*kt2/kt2_mplus1*(-beta/radius_m*(-jj*double(ih)))*sign*besy2[abs(ih)];
 
-                cmatrix[4*iia+3+(4*iia+0)*matrix_rank]=jj*kt2/kt2_m*(-beta/radius_m*(-jj*double(ih)))*sign*besj1[abs(ih)];
-                cmatrix[4*iia+3+(4*iia+1)*matrix_rank]=jj*kt2/kt2_m*(-beta/radius_m*(-jj*double(ih)))*sign*besy1[abs(ih)];
-                cmatrix[4*iia+3+(4*iib+0)*matrix_rank]=-jj*kt2/kt2_mplus1*(-beta/radius_m*(-jj*double(ih)))*sign*besj2[abs(ih)];
-                cmatrix[4*iia+3+(4*iib+1)*matrix_rank]=-jj*kt2/kt2_mplus1*(-beta/radius_m*(-jj*double(ih)))*sign*besy2[abs(ih)];
+                    //------------------Ephi from hz----------------------------
+                        cmatrix[4*iia+2+(4*iia+0)*matrix_rank]=jj*kt2/kt2_m*w_ua*sign*besj1d[abs(ih)];
+                        cmatrix[4*iia+2+(4*iia+1)*matrix_rank]=jj*kt2/kt2_m*w_ua*sign*besy1d[abs(ih)];
+                        cmatrix[4*iia+2+(4*iib+0)*matrix_rank]=-jj*kt2/kt2_mplus1*w_ua*sign*besj2d[abs(ih)];
+                        cmatrix[4*iia+2+(4*iib+1)*matrix_rank]=-jj*kt2/kt2_mplus1*w_ua*sign*besy2d[abs(ih)];
 
-            }
+                    //------------------Hphi from ez------------------------------
+                        cmatrix[4*iia+3+(4*iia-2)*matrix_rank]=jj*kt2/kt2_m*(-w_em)*sign*besj1d[abs(ih)];
+                        cmatrix[4*iia+3+(4*iia-1)*matrix_rank]=jj*kt2/kt2_m*(-w_em)*sign*besy1d[abs(ih)];
+                        cmatrix[4*iia+3+(4*iib-2)*matrix_rank]=-jj*kt2/kt2_mplus1*(-w_emplus1)*sign*besj2d[abs(ih)];
+                        cmatrix[4*iia+3+(4*iib-1)*matrix_rank]=-jj*kt2/kt2_mplus1*(-w_emplus1)*sign*besy2d[abs(ih)];
 
-//---------boundary condition for the very outside layer---------------------
+                    //------------------Hphi from hz-------------------------------
 
-            const int iii(block_index+(ih+max_harmonic)*number_layers+number_layers-1);
+                        cmatrix[4*iia+3+(4*iia+0)*matrix_rank]=jj*kt2/kt2_m*(-beta/radius_m*(-jj*double(ih)))*sign*besj1[abs(ih)];
+                        cmatrix[4*iia+3+(4*iia+1)*matrix_rank]=jj*kt2/kt2_m*(-beta/radius_m*(-jj*double(ih)))*sign*besy1[abs(ih)];
+                        cmatrix[4*iia+3+(4*iib+0)*matrix_rank]=-jj*kt2/kt2_mplus1*(-beta/radius_m*(-jj*double(ih)))*sign*besj2[abs(ih)];
+                        cmatrix[4*iia+3+(4*iib+1)*matrix_rank]=-jj*kt2/kt2_mplus1*(-beta/radius_m*(-jj*double(ih)))*sign*besy2[abs(ih)];
 
-        //---------------------ez from ez inside and outside---------------
-            cmatrix[4*iii+0+(4*iii-2)*matrix_rank]=sign*besj3[abs(ih)]*kt2;
-            cmatrix[4*iii+0+(4*iii-1)*matrix_rank]=sign*besy3[abs(ih)]*kt2;
-            cmatrix[4*iii+0+(4*iii+2)*matrix_rank]=-kt2;
+                    }  //bracket for middle layer iteration
 
-                //cout<<"\nrow: "<<4*iii+0<<"  column: "<<(4*iii-1)<<": "<<cmatrix[4*iii+0+(4*iii-1)*matrix_rank]<<endl;
+        //---------boundary condition for the very outside layer---------------------
 
-        //---------------------hz from hz inside and outside------------------
-            cmatrix[4*iii+1+(4*iii+0)*matrix_rank]=sign*besj3[abs(ih)]*kt2;
-            cmatrix[4*iii+1+(4*iii+1)*matrix_rank]=sign*besy3[abs(ih)]*kt2;
-            cmatrix[4*iii+1+(4*iii+3)*matrix_rank]=-1.*kt2;
+                    const int iii(block_index+(ih+max_harmonic)*number_layers+number_layers-1);
 
-        //---------------------ephi from ez inside and outside----------------
-            cmatrix[4*iii+2+(4*iii-2)*matrix_rank]=jj*kt2/kt2mlast*(-beta/radius_lastlayer*(-jj*double(ih)))*sign*besj3[abs(ih)];
-            cmatrix[4*iii+2+(4*iii-1)*matrix_rank]=jj*kt2/kt2mlast*(-beta/radius_lastlayer*(-jj*double(ih)))*sign*besy3[abs(ih)];
-            cmatrix[4*iii+2+(4*iii+2)*matrix_rank]=-jj*kt2/kt2*(-beta/radius_lastlayer*(-jj*double(ih)))*1.;
+                //---------------------ez from ez inside and outside---------------
+                    cmatrix[4*iii+0+(4*iii-2)*matrix_rank]=sign*besj3[abs(ih)]*kt2;
+                    cmatrix[4*iii+0+(4*iii-1)*matrix_rank]=sign*besy3[abs(ih)]*kt2;
+                    cmatrix[4*iii+0+(4*iii+2)*matrix_rank]=-kt2;
 
-        //---------------------ephi from hz inside and outside-----------------
-            cmatrix[4*iii+2+(4*iii+0)*matrix_rank]=jj*kt2/kt2mlast*w_ua*(sign*besj3d[abs(ih)]);
-            cmatrix[4*iii+2+(4*iii+1)*matrix_rank]=jj*kt2/kt2mlast*w_ua*(sign*besy3d[abs(ih)]);
-            cmatrix[4*iii+2+(4*iii+3)*matrix_rank]=-jj*kt2/kt2*w_ua*(hankad[abs(ih)]/hanka[abs(ih)]);
+                        //cout<<"\nrow: "<<4*iii+0<<"  column: "<<(4*iii-1)<<": "<<cmatrix[4*iii+0+(4*iii-1)*matrix_rank]<<endl;
 
-        //---------------------hphi from ez inside and outside-----------------
-            cmatrix[4*iii+3+(4*iii-2)*matrix_rank]=jj*kt2/kt2mlast*(-w_emlast)*sign*besj3d[abs(ih)];
-            cmatrix[4*iii+3+(4*iii-1)*matrix_rank]=jj*kt2/kt2mlast*(-w_emlast)*sign*besy3d[abs(ih)];
-            cmatrix[4*iii+3+(4*iii+2)*matrix_rank]=-jj*kt2/kt2*(-w_ea)*hankad[abs(ih)]/hanka[abs(ih)];
+                //---------------------hz from hz inside and outside------------------
+                    cmatrix[4*iii+1+(4*iii+0)*matrix_rank]=sign*besj3[abs(ih)]*kt2;
+                    cmatrix[4*iii+1+(4*iii+1)*matrix_rank]=sign*besy3[abs(ih)]*kt2;
+                    cmatrix[4*iii+1+(4*iii+3)*matrix_rank]=-1.*kt2;
 
-        //---------------------hphi from hz inside and outside-----------------
-            cmatrix[4*iii+3+(4*iii+0)*matrix_rank]=jj*kt2/kt2mlast*(-beta/radius_lastlayer*(-jj*double(ih)))*sign*besj3[abs(ih)];
-            cmatrix[4*iii+3+(4*iii+1)*matrix_rank]=jj*kt2/kt2mlast*(-beta/radius_lastlayer*(-jj*double(ih)))*sign*besy3[abs(ih)];
-            cmatrix[4*iii+3+(4*iii+3)*matrix_rank]=-jj*kt2/kt2*(-beta/radius_lastlayer*(-jj*double(ih)))*1.;
+                //---------------------ephi from ez inside and outside----------------
+                    cmatrix[4*iii+2+(4*iii-2)*matrix_rank]=jj*kt2/kt2mlast*(-beta/radius_lastlayer*(-jj*double(ih)))*sign*besj3[abs(ih)];
+                    cmatrix[4*iii+2+(4*iii-1)*matrix_rank]=jj*kt2/kt2mlast*(-beta/radius_lastlayer*(-jj*double(ih)))*sign*besy3[abs(ih)];
+                    cmatrix[4*iii+2+(4*iii+2)*matrix_rank]=-jj*kt2/kt2*(-beta/radius_lastlayer*(-jj*double(ih)))*1.;
 
-        }
+                //---------------------ephi from hz inside and outside-----------------
+                    cmatrix[4*iii+2+(4*iii+0)*matrix_rank]=jj*kt2/kt2mlast*w_ua*(sign*besj3d[abs(ih)]);
+                    cmatrix[4*iii+2+(4*iii+1)*matrix_rank]=jj*kt2/kt2mlast*w_ua*(sign*besy3d[abs(ih)]);
+                    cmatrix[4*iii+2+(4*iii+3)*matrix_rank]=-jj*kt2/kt2*w_ua*(hankad[abs(ih)]/hanka[abs(ih)]);
 
-        block_index+=number_layers*no_harmonics;
-    }
+                //---------------------hphi from ez inside and outside-----------------
+                    cmatrix[4*iii+3+(4*iii-2)*matrix_rank]=jj*kt2/kt2mlast*(-w_emlast)*sign*besj3d[abs(ih)];
+                    cmatrix[4*iii+3+(4*iii-1)*matrix_rank]=jj*kt2/kt2mlast*(-w_emlast)*sign*besy3d[abs(ih)];
+                    cmatrix[4*iii+3+(4*iii+2)*matrix_rank]=-jj*kt2/kt2*(-w_ea)*hankad[abs(ih)]/hanka[abs(ih)];
+
+                //---------------------hphi from hz inside and outside-----------------
+                    cmatrix[4*iii+3+(4*iii+0)*matrix_rank]=jj*kt2/kt2mlast*(-beta/radius_lastlayer*(-jj*double(ih)))*sign*besj3[abs(ih)];
+                    cmatrix[4*iii+3+(4*iii+1)*matrix_rank]=jj*kt2/kt2mlast*(-beta/radius_lastlayer*(-jj*double(ih)))*sign*besy3[abs(ih)];
+                    cmatrix[4*iii+3+(4*iii+3)*matrix_rank]=-jj*kt2/kt2*(-beta/radius_lastlayer*(-jj*double(ih)))*1.;
+
+                }   //bracket for ih iteration
+
+
+            }  //if ip!=iq condition
+
+            coeff_index+=no_harmonics*iq_no_layers;
+
+        }  //bracket for wire q iteration
+
+        block_index+=number_layers*no_harmonics;     //iterate for wire p
+
+    }    //bracket for wire p iteration
+
 
 //-----------------------coupling terms---------------------------------------
     int boundary_index=0;
