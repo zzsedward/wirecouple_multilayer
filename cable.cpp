@@ -137,11 +137,11 @@ int main(int argc, char* argv[]){
         fout<<"\n"<<real(beta)/ko<<","<<sv[no_solutions-1];
         //fout<<"\n"<<frequency<<","<<sv[no_solutions-1];
 
-        if(no_solutions>1){fout<<","<<sv[no_solutions-6];}
-        if(no_solutions>2){fout<<","<<sv[no_solutions-11];}
-        if(no_solutions>3){fout<<","<<sv[no_solutions-16];}
-        if(no_solutions>4){fout<<","<<sv[no_solutions-21];}
-        if(no_solutions>5){fout<<","<<sv[no_solutions-26];}
+        if(no_solutions>1){fout<<","<<sv[no_solutions-2];}
+        if(no_solutions>2){fout<<","<<sv[no_solutions-3];}
+        if(no_solutions>3){fout<<","<<sv[no_solutions-4];}
+        if(no_solutions>4){fout<<","<<sv[no_solutions-5];}
+        if(no_solutions>5){fout<<","<<sv[no_solutions-6];}
 
         //for(int s=0;s<no_solutions;s++){fout<<","<<sv[no_solutions-s-1];}
 	  }
@@ -245,7 +245,7 @@ int get_determinant(vector<wire>& wires,
     int block_index=0;  //boundary block
 
     for(int ip=0;ip<no_wires;++ip){
-
+        //cout<<"\nip: "<<ip;
         const int number_layers(wires[ip].no_layers);
 
             const double radius_m0(wires[ip].radius[0]);
@@ -407,7 +407,7 @@ int get_determinant(vector<wire>& wires,
                     cmatrix[4*ii+3+(4*ii+1)*matrix_rank]=jj*kt2/kt2m0*(-beta/radius_m0*(-jj*double(ih)))*1.;
                     cmatrix[4*ii+3+(4*ii+4)*matrix_rank]=-jj*kt2/kt2m1*(-beta/radius_m0*(-jj*double(ih)))*sign*besj2[abs(ih)];
                     cmatrix[4*ii+3+(4*ii+5)*matrix_rank]=-jj*kt2/kt2m1*(-beta/radius_m0*(-jj*double(ih)))*sign*besy2[abs(ih)];
-
+                    //Coupling terms for first layer boundary
                     for(int jh=-max_harmonic; jh<=max_harmonic; ++jh){
 
                         const int iqjh(coeff_index+(jh+max_harmonic)*iq_no_layers);
@@ -436,7 +436,14 @@ int get_determinant(vector<wire>& wires,
                         cmatrix[4*ii+3+(4*iqjh+4)*matrix_rank]=-jj*kt2/kt2m1*(-beta/radius_m0*(-jj*double(ih)))*sign*besj2[abs(ih)]*T(ih,jh);
                         cmatrix[4*ii+3+(4*iqjh+5)*matrix_rank]=-jj*kt2/kt2m1*(-beta/radius_m0*(-jj*double(ih)))*sign*besy2[abs(ih)]*T(ih,jh);
 
+                        //cout<<"\nboundary: "<<4*ii+0;
+                        //cout<<"\nCoefficient of wire: "<< iq<<" index: "<<4*iqjh;
+                        //cout<<"\nCoefficient of wire: "<< iq<<" index: "<<4*iqjh+2;
+                        //cout<<"\nCoefficient of wire: "<< iq<<" index: "<<4*iqjh+3;
+
                     }
+
+
 
         //----------boundary conditions for middle layers--------------------------
                     for(int im=1;im<number_layers-1;im++){
@@ -592,6 +599,7 @@ int get_determinant(vector<wire>& wires,
 
                     }  //bracket for middle layer iteration
 
+
         //---------boundary condition for the very outside layer---------------------
 
                     const int iii(block_index+(ih+max_harmonic)*number_layers+number_layers-1);
@@ -630,8 +638,9 @@ int get_determinant(vector<wire>& wires,
 
                     for(int jh=-max_harmonic; jh<=max_harmonic; ++jh){
 
-                        const int iqjhl(coeff_index+(jh+max_harmonic)*iq_no_layers);   //coefficient index for last layer
 
+                        //Coupling terms for last layer boundary
+                        const int iqjhl(coeff_index+(jh+max_harmonic)*iq_no_layers+iq_no_layers-1);   //coefficient index for last layer
                         //---------------------Ez from ez----------------------------
                         cmatrix[4*iii+0+(4*iqjhl-2)*matrix_rank]=sign*besj3[abs(ih)]*kt2*T(ih,jh);
                         cmatrix[4*iii+0+(4*iqjhl-1)*matrix_rank]=sign*besy3[abs(ih)]*kt2*T(ih,jh);
@@ -660,7 +669,12 @@ int get_determinant(vector<wire>& wires,
                         cmatrix[4*iii+3+(4*iqjhl+0)*matrix_rank]=jj*kt2/kt2mlast*(-beta/radius_lastlayer*(-jj*double(ih)))*sign*besj3[abs(ih)]*T(ih,jh);
                         cmatrix[4*iii+3+(4*iqjhl+1)*matrix_rank]=jj*kt2/kt2mlast*(-beta/radius_lastlayer*(-jj*double(ih)))*sign*besy3[abs(ih)]*T(ih,jh);
                         cmatrix[4*iii+3+(4*iqjhl+3)*matrix_rank]=-jj*kt2/kt2*(-beta/radius_lastlayer*(-jj*double(ih)))*T(ih,jh);
+                        //cout<<"\nlast layer boundary: "<<4*iii+0;
+                        //cout<<"\nCoefficient of wire: "<< iq<<" index: "<<4*iqjhl-2;
+//                        cout<<"\nCoefficient of wire: "<< iq<<" index: "<<4*iqjhl-1;
+                        //cout<<"\nCoefficient of wire: "<< iq<<" index: "<<4*iqjhl+2;
                     }    //iteration end for jh
+
 
                 }   //bracket for ih iteration
 
