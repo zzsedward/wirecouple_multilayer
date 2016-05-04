@@ -28,7 +28,7 @@ int main(int argc, char* argv[]){
     const double ko(2.*constants::get_pi()*freq_MHz*1e6/constants::get_co());
         cout<<"ko: "<<2.*constants::get_pi()*freq_MHz*1e6/constants::get_co()<<endl;
        // cout<<"co: "<<constants::get_co()<<endl;
-    const double kappa (1e7); //conductivity of conductor
+    const double kappa (1e10); //conductivity of conductor
 
     const complex epsilon_r(1.-complex(0.,1.)* kappa/(2.*constants::get_pi()*freq_MHz*1e6*constants::get_eo()));
         cout<<"epsilon_r: "<<epsilon_r<<endl;
@@ -48,7 +48,7 @@ int main(int argc, char* argv[]){
     complex* relative_epsilon=new complex[number_layers];
 
     relative_epsilon[0]=epsilon_r;
-    relative_epsilon[1]=epsilon_rd;
+    relative_epsilon[1]=epsilon_rd2;
     relative_epsilon[2]=epsilon_rd2;
 
     vector<wire> wires;
