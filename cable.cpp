@@ -15,13 +15,13 @@ int main(int argc, char* argv[]){
 
     const int max_harmonic(5); // ie will use from -this to +this
 
-    int number_layers(2);
+    int number_layers(3);
 
     double* radii= new double[number_layers];
 
     radii[0]=1.e-3;
     radii[1]=1.2e-3;
-    //radii[2]=1.4e-3;
+    radii[2]=1.4e-3;
 //
     const double freq_MHz(1);
 
@@ -39,7 +39,7 @@ int main(int argc, char* argv[]){
     const double er_plastic(2.5);
     const double loss_tan(2.5e-4);
     const complex epsilon_rd(er_plastic, -er_plastic*loss_tan);
-      //const complex epsilon_rd(1,0);
+      const complex epsilon_rd2(1,0);
         cout<<"epsilon dielectric: "<<epsilon_rd<<endl;
 
     const complex kod(ko*sqrt(epsilon_rd));
@@ -49,7 +49,7 @@ int main(int argc, char* argv[]){
 
     relative_epsilon[0]=epsilon_r;
     relative_epsilon[1]=epsilon_rd;
-    //relative_epsilon[2]=1;
+    relative_epsilon[2]=epsilon_rd2;
 
     vector<wire> wires;
 
@@ -65,7 +65,7 @@ int main(int argc, char* argv[]){
      const double max_beta(1.1*ko);
         cout<<"max beta: "<<max_beta<<endl;
 
-     const int no_beta_steps(200);
+     const int no_beta_steps(100);
 
      vector<complex> amps;
 
@@ -367,6 +367,7 @@ int get_determinant(vector<wire>& wires,
                 S17DCF(&fnu,zc,&no_bes_needed,&scale,scale_len,&temp[0],&nz,&cwrk[0],&ifail);
 
                     for(int k=0;k<no_bes_needed;++k){besyb[k]=complex(temp[2*k],temp[2*k+1]);}
+
 //----------------------outside field----------------------------------
 
             zc[0]=real(kt*radius_lastlayer);
