@@ -989,19 +989,19 @@ void get_fields(vector<wire>& wires,
 
         //cout<<"\nThe point is in the air."<<endl;
 
-        for(int iw=0;iw<no_wires;++iw){
+        for(int ip=0;ip<no_wires;++ip){
 
-            const double ddx(x-wires[iw].centre[0]);
-            const double ddy(y-wires[iw].centre[1]);
+            const double ddx(x-wires[ip].centre[0]);
+            const double ddy(y-wires[ip].centre[1]);
 
             const double r(sqrt(ddx*ddx+ddy*ddy));
             const double phi(atan2(ddx,ddy));
 
-            const int number_layer(wires[iw].no_layers);
+            const int number_layer(wires[ip].no_layers);
             //cout<<"\nwire "<<iw<<" number of layers: "<<number_layer;
 
-            zc[0]=real(kt*wires[iw].radius[number_layer-1]);
-            zc[1]=imag(kt*wires[iw].radius[number_layer-1]);
+            zc[0]=real(kt*wires[ip].radius[number_layer-1]);
+            zc[1]=imag(kt*wires[ip].radius[number_layer-1]);
 
                 S17DLF(&hank_kind,&fnu,zc,&no_bes_needed,&scale,scale_len,&temp[0],&hank_its,&ifail);
 
@@ -1023,8 +1023,8 @@ void get_fields(vector<wire>& wires,
 
             for(int ih=-max_harmonic;ih<=max_harmonic;++ih){
 
-                complex Xpoe_over_kt2(amps[iw*number_layer*no_harmonics*4+(ih+max_harmonic)*number_layer*4+ number_layer*4-2]*exp(-jj*double(ih)*phi));
-                complex Xpoh_over_kt2(amps[iw*number_layer*no_harmonics*4+(ih+max_harmonic)*number_layer*4+ number_layer*4-1]*exp(-jj*double(ih)*phi));
+                complex Xpoe_over_kt2(amps[ip*number_layer*no_harmonics*4+(ih+max_harmonic)*number_layer*4+ number_layer*4-2]*exp(-jj*double(ih)*phi));
+                complex Xpoh_over_kt2(amps[ip*number_layer*no_harmonics*4+(ih+max_harmonic)*number_layer*4+ number_layer*4-1]*exp(-jj*double(ih)*phi));
 
                 //cout<<"\nXpoe: "<<iw*number_layer*no_harmonics*4+(ih+max_harmonic)*number_layer*4+ number_layer*4-2;
                 //cout<<"\nXpoh: "<<iw*number_layer*no_harmonics*4+(ih+max_harmonic)*number_layer*4+ number_layer*4-1<<endl;
@@ -1078,7 +1078,8 @@ void get_fields(vector<wire>& wires,
             //cout<<"\nPoint in the first layer."<<endl;
             //cout<<"layer number: "<<layer_number+1<<endl;
 
-            double radius(wires[wire_number].radius[0]);
+            const double radius(wires[wire_number].radius[0]);
+            const int number_layer(wires[wire_number].no_layers)
             //cout<<"layer radius: "<<radius<<endl;
            // cout<<"relative epsilon: "<<epsilon_relative<<endl;
 
@@ -1110,8 +1111,8 @@ void get_fields(vector<wire>& wires,
 
             for(int ih=-max_harmonic;ih<=max_harmonic;++ih){
 
-                complex Xpie_over_kt2(amps[index+(ih+max_harmonic)*wires[wire_number].no_layers*4+0]*exp(-jj*double(ih)*phi));
-                complex Xpih_over_kt2(amps[index+(ih+max_harmonic)*wires[wire_number].no_layers*4+0]*exp(-jj*double(ih)*phi));
+                complex Xpie_over_kt2(amps[index+(ih+max_harmonic)*number_layer*4+0]*exp(-jj*double(ih)*phi));
+                complex Xpih_over_kt2(amps[index+(ih+max_harmonic)*number_layer*4+1]*exp(-jj*double(ih)*phi));
 
                 //cout<<"\nXpie: "<<index+(ih+max_harmonic)*wires[wire_number].no_layers*4+0<<endl;
 
@@ -1129,6 +1130,20 @@ void get_fields(vector<wire>& wires,
 
                 hr+=jj*(w_e0/r)*(-jj*double(ih))*besa[abs(ih)]/besb[abs(ih)]*Xpie_over_kt2;
                 hr+=jj*(-beta)*besad[abs(ih)]/besb[abs(ih)]*Xpih_over_kt2;
+
+                int iq_index(0);
+                for(int iq=0;iq<no_wires;++iq)
+                {
+                    if(iq!=wire_number)
+                    {
+                        wire_coupling_termer T(wires[wire_number], wires[iq],max_harmonic,kt);
+
+                        for(int jh=-max_harmonic; jh<=max_harmonic; ++jh)
+                        {
+                            const int iqjh
+                        }
+                    }
+                }
             }
 
             ex+=ephi*cos(phi)+er*sin(phi);
