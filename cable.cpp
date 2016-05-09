@@ -915,7 +915,7 @@ void get_fields(vector<wire>& wires,
     const double w_ua(ko*constants::get_zo());
     const double w_ea(ko*constants::get_yo());
 
-    complex kt2= ko*ko-beta*beta;
+    complex kt2=ko*ko-beta*beta;
     complex kt=sqrt(kt2);
 
 //--------------------bessel function declaration----------------------------
@@ -1053,10 +1053,13 @@ void get_fields(vector<wire>& wires,
                 hr+=jj*(-beta)*hankad[abs(ih)]/hankb[abs(ih)]*Xpoh_over_kt2;
             }
 
-            ex+=ephi*cos(phi)+er*sin(phi);
+            //ex+=ephi*cos(phi)+er*sin(phi);
             ey+=-ephi*sin(phi)+er*cos(phi);
-            hx+=hphi*cos(phi)+hr*sin(phi);
+            //hx+=hphi*cos(phi)+hr*sin(phi);
             hy+=-hphi*sin(phi)+hr*sin(phi);
+
+            ex=ephi;
+            hx=hphi;
         }
     } else{
 //----------------------when point is in the wire-------------------------------------------------
@@ -1135,10 +1138,12 @@ void get_fields(vector<wire>& wires,
                 hr+=jj*(-beta)*besad[abs(ih)]/besb[abs(ih)]*Xpih_over_kt2;
             }
 
-            ex+=ephi*cos(phi)+er*sin(phi);
+            //ex+=ephi*cos(phi)+er*sin(phi);
             ey+=-ephi*sin(phi)+er*cos(phi);
-            hx+=hphi*cos(phi)+hr*sin(phi);
+            //hx+=hphi*cos(phi)+hr*sin(phi);
             hy+=-hphi*sin(phi)+hr*sin(phi);
+            ex=ephi;
+            hx=hphi;
 
         }else{
             //cout<<"\nPoint in the mid layer."<<endl;
@@ -1192,14 +1197,14 @@ void get_fields(vector<wire>& wires,
                 complex Xphj_over_kt2(amps[index+(ih+max_harmonic)*wires[wire_number].no_layers*4+layer_number*4-0]*exp(-jj*double(ih)*phi));
                 complex Xphy_over_kt2(amps[index+(ih+max_harmonic)*wires[wire_number].no_layers*4+layer_number*4+1]*exp(-jj*double(ih)*phi));
 
-                ez+=besj[abs(ih)]/besjm1[abs(ih)]*Xpej_over_kt2+besy[abs(ih)]*Xpey_over_kt2;
-                hz+=besj[abs(ih)]/besjm1[abs(ih)]*Xphj_over_kt2+besy[abs(ih)]*Xphy_over_kt2;
+                ez+=besj[abs(ih)]/besjm1[abs(ih)]*Xpej_over_kt2+besy[abs(ih)]/besym1[abs(ih)]*Xpey_over_kt2;
+                hz+=besj[abs(ih)]/besjm1[abs(ih)]*Xphj_over_kt2+besy[abs(ih)]/besym1[abs(ih)]*Xphy_over_kt2;
 
                 ephi+=jj*(-beta/r*(-jj*double(ih)))*(besj[abs(ih)]/besjm1[abs(ih)]*Xpej_over_kt2+besy[abs(ih)]/besym1[abs(ih)]*Xpey_over_kt2);
                 ephi+=jj*w_ua*(besjd[abs(ih)]/besjm1[abs(ih)]*Xpej_over_kt2+besyd[abs(ih)]/besym1[abs(ih)]*Xpey_over_kt2);
 
                 er+=jj*(-beta)*(besjd[abs(ih)]/besjm1[abs(ih)]*Xpej_over_kt2+besyd[abs(ih)]/besym1[abs(ih)]*Xpey_over_kt2);
-                er+=jj*(-w_ua/r)*(-jj*double(ih))*(besj[abs(ih)]*Xpej_over_kt2+besy[abs(ih)]*Xpey_over_kt2);
+                er+=jj*(-w_ua/r)*(-jj*double(ih))*(besj[abs(ih)]/besjm1[abs(ih)]*Xpej_over_kt2+besy[abs(ih)]/besym1[abs(ih)]*Xpey_over_kt2);
 
                 hphi+=jj*(-w_em)*(besjd[abs(ih)]/besjm1[abs(ih)]*Xpej_over_kt2+besyd[abs(ih)]/besym1[abs(ih)]*Xpey_over_kt2);
                 hphi+=jj*(-beta/r*(-jj*double(ih)))*(besj[abs(ih)]/besjm1[abs(ih)]*Xpej_over_kt2+besy[abs(ih)]/besym1[abs(ih)]*Xpey_over_kt2);
@@ -1208,11 +1213,12 @@ void get_fields(vector<wire>& wires,
                 hr+=jj*(-beta)*(besjd[abs(ih)]/besjm1[abs(ih)]*Xpej_over_kt2+besyd[abs(ih)]/besym1[abs(ih)]*Xpey_over_kt2);
             }
 
-            ex+=ephi*cos(phi)+er*sin(phi);
+            //ex+=ephi*cos(phi)+er*sin(phi);
             ey+=-ephi*sin(phi)+er*cos(phi);
-            hx+=hphi*cos(phi)+hr*sin(phi);
+            //hx+=hphi*cos(phi)+hr*sin(phi);
             hy+=-hphi*sin(phi)+hr*sin(phi);
-
+            ex=ephi;
+            hx=hphi;
         }
     }
 
