@@ -36,10 +36,10 @@ int main(int argc, char* argv[]){
     const complex kow(ko*sqrt(epsilon_r));
         cout<<"kow: "<<kow<<endl;
 
-    const double er_plastic(2.25);
+    const double er_plastic(1);
     const double loss_tan(0);
     const complex epsilon_rd(er_plastic, -er_plastic*loss_tan);
-      const complex epsilon_rd2(1.5,0);
+      const complex epsilon_rd2(1,0);
         cout<<"epsilon dielectric: "<<epsilon_rd<<endl;
 
     const complex kod(ko*sqrt(epsilon_rd));
@@ -49,7 +49,7 @@ int main(int argc, char* argv[]){
 
     relative_epsilon[0]=epsilon_r;
     relative_epsilon[1]=epsilon_rd;
-    relative_epsilon[2]=epsilon_rd2;
+    relative_epsilon[2]=epsilon_r;
 
     vector<wire> wires;
 
@@ -117,7 +117,7 @@ int main(int argc, char* argv[]){
     //------------beta variation with real part only-----------------------------------
        // double frequency_min(1e6),frequency_max(9.99e8);
 
-     /*   for(int i=0;i<no_beta_steps;++i) {
+        for(int i=0;i<no_beta_steps;++i) {
             //const double frequency(frequency_min+double(i)/double(no_beta_steps-1)*(frequency_max-frequency_min));
             //const complex beta(2.*constants::get_pi()*frequency/constants::get_co(),0);
          const complex beta(min_beta+double(i)/double(no_beta_steps-1)*(max_beta-min_beta),0.);
@@ -148,15 +148,15 @@ int main(int argc, char* argv[]){
 
 
          fout.close();
-        cout<<"\nBest="<<real(min_sv_beta)/ko<<" "<<min_sv;cout.flush();*/
-         int no_solutions=get_determinant(wires,ko,complex(1.0947*ko,0.0),max_harmonic,amps,which_mode,sv);
+        cout<<"\nBest="<<real(min_sv_beta)/ko<<" "<<min_sv;cout.flush();
+         //int no_solutions=get_determinant(wires,ko,complex(1.0947*ko,0.0),max_harmonic,amps,which_mode,sv);
           //cout<<"\ncondition: "<<sv[0]/sv[no_solutions-1]<<endl;
           //cout<<"\nlargest sv: "<<sv[0]<<endl;
          //cout<<"\nsmallest sv: "<<sv[no_solutions-1]<<endl;*/
          // plot_field2(wires,ko,epsilon_rd,epsilon_r,complex(0.99*ko,0.0),max_harmonic,amps);
          //complex ex,ey,ez,hx,hy,hz,ephi;
          //get_fields(wires,ko,(0.99*ko,0.),max_harmonic,amps,11.41e-3,0.,ex,ey,ez,hx,hy,hz,ephi);
-         plot_field(wires,ko,complex(1.0947*ko,0.0),max_harmonic,amps);
+         //plot_field(wires,ko,complex(1.0947*ko,0.0),max_harmonic,amps);
 }
 
 
