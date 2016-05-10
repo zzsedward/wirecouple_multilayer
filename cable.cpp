@@ -28,7 +28,7 @@ int main(int argc, char* argv[]){
     const double ko(2.*constants::get_pi()*freq_MHz*1e6/constants::get_co());
         cout<<"ko: "<<2.*constants::get_pi()*freq_MHz*1e6/constants::get_co()<<endl;
        // cout<<"co: "<<constants::get_co()<<endl;
-    const double kappa (1e8); //conductivity of conductor
+    const double kappa (1e10); //conductivity of conductor
 
     const complex epsilon_r(1.-complex(0.,1.)* kappa/(2.*constants::get_pi()*freq_MHz*1e6*constants::get_eo()));
         cout<<"epsilon_r: "<<epsilon_r<<endl;
@@ -39,7 +39,7 @@ int main(int argc, char* argv[]){
     const double er_plastic(2.25);
     const double loss_tan(0);
     const complex epsilon_rd(er_plastic, -er_plastic*loss_tan);
-      const complex epsilon_rd2(1.,0);
+      const complex epsilon_rd2(1.5,0);
         cout<<"epsilon dielectric: "<<epsilon_rd<<endl;
 
     const complex kod(ko*sqrt(epsilon_rd));
@@ -79,7 +79,7 @@ int main(int argc, char* argv[]){
 
      ofstream fout("sv.csv");
 
-     int which_mode(5); // 0 means lowest sv, 1 next lowest etc
+     int which_mode(0); // 0 means lowest sv, 1 next lowest etc
 
      /*for(int i=0;i<no_beta_steps;++i) {fout<<","<<(min_beta+double(i)/double(no_beta_steps-1)*(max_beta-min_beta))/ko;}
 
@@ -117,7 +117,7 @@ int main(int argc, char* argv[]){
     //------------beta variation with real part only-----------------------------------
        // double frequency_min(1e6),frequency_max(9.99e8);
 
-        for(int i=0;i<no_beta_steps;++i) {
+     /*   for(int i=0;i<no_beta_steps;++i) {
             //const double frequency(frequency_min+double(i)/double(no_beta_steps-1)*(frequency_max-frequency_min));
             //const complex beta(2.*constants::get_pi()*frequency/constants::get_co(),0);
          const complex beta(min_beta+double(i)/double(no_beta_steps-1)*(max_beta-min_beta),0.);
@@ -146,16 +146,17 @@ int main(int argc, char* argv[]){
         //for(int s=0;s<no_solutions;s++){fout<<","<<sv[no_solutions-s-1];}
 	  }
 
-         fout.close();
 
-         //int no_solutions=get_determinant(wires,ko,complex(0.99*ko,0.0),max_harmonic,amps,which_mode,sv);
+         fout.close();
+        cout<<"\nBest="<<real(min_sv_beta)/ko<<" "<<min_sv;cout.flush();*/
+         int no_solutions=get_determinant(wires,ko,complex(1.0947*ko,0.0),max_harmonic,amps,which_mode,sv);
           //cout<<"\ncondition: "<<sv[0]/sv[no_solutions-1]<<endl;
           //cout<<"\nlargest sv: "<<sv[0]<<endl;
          //cout<<"\nsmallest sv: "<<sv[no_solutions-1]<<endl;*/
          // plot_field2(wires,ko,epsilon_rd,epsilon_r,complex(0.99*ko,0.0),max_harmonic,amps);
          //complex ex,ey,ez,hx,hy,hz,ephi;
          //get_fields(wires,ko,(0.99*ko,0.),max_harmonic,amps,11.41e-3,0.,ex,ey,ez,hx,hy,hz,ephi);
-         //plot_field(wires,ko,complex(0.99*ko,0.0),max_harmonic,amps);
+         plot_field(wires,ko,complex(1.0947*ko,0.0),max_harmonic,amps);
 }
 
 
@@ -1225,7 +1226,7 @@ void get_fields(vector<wire>& wires,
     //cout<<"\nephi: "<<ephi<<endl;
 }
 
-void plot_field(vector<wire>& wires,
+/*void plot_field(vector<wire>& wires,
                 const double ko,
                 const complex beta,
                 const int max_harmonic,
@@ -1277,10 +1278,10 @@ void plot_field(vector<wire>& wires,
 
             get_fields(wires,ko,beta,max_harmonic,amps,x,y,ex,ey,ez,hx,hy,hz,ephi);
 
-            Exout<<","<<abs(ex);
+            Exout<<","<<real(ex);
             Eyout<<","<<abs(ey);
             Ezout<<","<<abs(ez);
-            Hxout<<","<<abs(hx);
+            Hxout<<","<<real(hx);
             Hyout<<","<<abs(hy);
             Hzout<<","<<abs(hz);
             Etout<<","<<sqrt(abs(ex)*abs(ex)+abs(ey)*abs(ey));
@@ -1298,9 +1299,39 @@ void plot_field(vector<wire>& wires,
     Hzout.close();
     Htout.close();
 
-}
+}*/
 //------------------plot field with respect to angles phi at boundary--------------------------
+void plot_field(vector<wire>& wires,
+                const double ko,
+                const complex beta,
+                const int max_harmonic,
+                vector <complex>& amps)
+{
+    ofstream Ephiout("Ephi.csv");
 
+    int npts(400);
+
+    double xmin(-5e-3),xmax(5e-3);
+
+    const double y(0);
+
+    const double dx((xmax-xmin)/double(npts));
+
+    for(int i=0;i<npts;++i) {
+
+        Ephiout<<"\n"<<xmin+double(i)*dx;
+
+        complex ex,ey,ez,hx,hy,hz,ephi;
+
+        const double x(xmin+double(i)*dx);
+
+        get_fields(wires,ko,beta,max_harmonic,amps,x,y,ex,ey,ez,hx,hy,hz,ephi);
+
+        Ephiout<<","<<real(ex);
+    }
+
+    Ephiout.close();
+}
 /*void plot_field2(vector<wire>& wires,
           const double ko,
           const complex erd,
