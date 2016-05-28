@@ -281,8 +281,7 @@ void get_fields(vector<wire>& wires,
                 complex& ez,
                 complex& hx,
                 complex& hy,
-                complex& hz,
-                complex& ephi);
+                complex& hz);
 
 void plot_field(vector<wire>& wires,
                 const double ko,
