@@ -290,10 +290,8 @@ void plot_field(vector<wire>& wires,
                 vector <complex>& amps);
 
 void plot_field2(vector<wire>& wires,
-                  const double ko,
-                  const complex erd,
-                  const complex erw,
-                  const complex beta,
-                  const int max_harmonic,
-                  vector<complex>& amps);
+                const double ko,
+                const complex beta,
+                const int max_harmonic,
+                vector <complex>& amps);
 #endif // CABLE_H_INCLUDED
