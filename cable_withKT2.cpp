@@ -13,7 +13,7 @@
 int main(int argc, char* argv[]){
     cout<<"Hello World!"<<endl;
 
-    const int max_harmonic(1); // ie will use from -this to +this
+    const int max_harmonic(5); // ie will use from -this to +this
 
     int number_layers(2);
 
@@ -28,7 +28,7 @@ int main(int argc, char* argv[]){
     const double ko(2.*constants::get_pi()*freq_MHz*1e6/constants::get_co());
         cout<<"ko: "<<2.*constants::get_pi()*freq_MHz*1e6/constants::get_co()<<endl;
        // cout<<"co: "<<constants::get_co()<<endl;
-    const double kappa (1e9); //conductivity of conductor
+    const double kappa (1e2); //conductivity of conductor
 
     const complex epsilon_r(1.-complex(0.,1.)* kappa/(2.*constants::get_pi()*freq_MHz*1e6*constants::get_eo()));
         cout<<"epsilon_r: "<<epsilon_r<<endl;
@@ -65,7 +65,7 @@ int main(int argc, char* argv[]){
      const double max_beta(1.1*ko);
         cout<<"max beta: "<<max_beta<<endl;
 
-     const int no_beta_steps(100);
+     const int no_beta_steps(101);
 
      vector<complex> amps;
 
@@ -119,7 +119,7 @@ int main(int argc, char* argv[]){
     //------------beta variation with real part only-----------------------------------
        // double frequency_min(1e6),frequency_max(9.99e8);
 
-     /*   for(int i=0;i<no_beta_steps;++i) {
+        for(int i=0;i<no_beta_steps;++i) {
             //const double frequency(frequency_min+double(i)/double(no_beta_steps-1)*(frequency_max-frequency_min));
             //const complex beta(2.*constants::get_pi()*frequency/constants::get_co(),0);
          const complex beta(min_beta+double(i)/double(no_beta_steps-1)*(max_beta-min_beta),0.);
@@ -150,19 +150,19 @@ int main(int argc, char* argv[]){
 
 
          fout.close();
-        cout<<"\nBest="<<real(min_sv_beta)/ko<<" "<<min_sv;cout.flush();*/
-         min_sv_beta=complex(0.020958,1e-6);
-         cout<<"\nbeta: "<<min_sv_beta;
-         int no_solutions=get_determinant(wires,ko,min_sv_beta,max_harmonic,best_amps,which_mode,sv);
+        cout<<"\nBest="<<real(min_sv_beta)/ko<<" "<<min_sv;cout.flush();
+//         min_sv_beta=complex(0.020958,1e-6);
+//         cout<<"\nbeta: "<<min_sv_beta;
+//         int no_solutions=get_determinant(wires,ko,min_sv_beta,max_harmonic,best_amps,which_mode,sv);
           //cout<<"\ncondition: "<<sv[0]/sv[no_solutions-1]<<endl;
           //cout<<"\nlargest sv: "<<sv[0]<<endl;
          //cout<<"\nsmallest sv: "<<sv[no_solutions-1]<<endl;*/
          // plot_field2(wires,ko,epsilon_rd,epsilon_r,complex(0.99*ko,0.0),max_harmonic,amps);
-         complex ex,ey,ez,hx,hy,hz;
-         get_fields(wires,ko,min_sv_beta,max_harmonic,best_amps,-1.80001e-3,0.,ex,ey,ez,hx,hy,hz);
-         cout<<"\nEx1: "<<ex;
-         get_fields(wires,ko,min_sv_beta,max_harmonic,best_amps,-1.8e-3,0.,ex,ey,ez,hx,hy,hz);
-         cout<<"\nEx2: "<<ex;
+//         complex ex,ey,ez,hx,hy,hz;
+//         get_fields(wires,ko,min_sv_beta,max_harmonic,best_amps,-1.80001e-3,0.,ex,ey,ez,hx,hy,hz);
+//         cout<<"\nEx1: "<<ex;
+//         get_fields(wires,ko,min_sv_beta,max_harmonic,best_amps,-1.8e-3,0.,ex,ey,ez,hx,hy,hz);
+//         cout<<"\nEx2: "<<ex;
 
 //         plot_field(wires,ko,min_sv_beta,max_harmonic,best_amps);
 //         plot_field2(wires,ko,min_sv_beta,max_harmonic,best_amps);
@@ -746,16 +746,16 @@ int get_determinant(vector<wire>& wires,
      }
      //cout<<"sz: "<<sz<<endl;
 
-     for(int i=0;i<matrix_rank;++i){
-        complex resulta(0.);
-
-        for(int j=0; j<matrix_rank;++j){
-                //cout<<"\ncmatrix "<<j<<": "<<cmatrix[2+j*matrix_rank]*amps[j]<<endl;
-            resulta+=cmatrix[i+j*matrix_rank]*amps[j];
-        }
-
-        cout<<"\nresult: "<<resulta<<endl;
-     }
+//     for(int i=0;i<matrix_rank;++i){
+//        complex resulta(0.);
+//
+//        for(int j=0; j<matrix_rank;++j){
+//                //cout<<"\ncmatrix "<<j<<": "<<cmatrix[2+j*matrix_rank]*amps[j]<<endl;
+//            resulta+=cmatrix[i+j*matrix_rank]*amps[j];
+//        }
+//
+//        cout<<"\nresult: "<<resulta<<endl;
+//     }
 
      return(sz);
 }
